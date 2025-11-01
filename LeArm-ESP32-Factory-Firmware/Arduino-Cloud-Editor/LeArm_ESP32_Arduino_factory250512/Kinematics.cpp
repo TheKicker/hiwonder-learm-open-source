@@ -1,4 +1,4 @@
-#include "kinematics.hpp"
+#include "Kinematics.hpp"
 #include "math.h"
 #include "string.h"
 

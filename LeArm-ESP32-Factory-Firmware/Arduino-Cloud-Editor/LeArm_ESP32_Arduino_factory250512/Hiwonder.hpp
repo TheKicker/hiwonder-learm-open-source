@@ -3,14 +3,14 @@
 
 #define ROBOT_LOGO    "LeArm"
 
-//存放起始地址
-#define MEM_LOBOT_LOGO_BASE					0L	//"LOBOT"存放基地址，用于识别是否是新FLASH
-#define MEM_FRAME_INDEX_SUM_BASE			4096L//每个动作组有多少动作，从这个地址开始存放，共计256个动作组
-#define MEM_ACT_FULL_BASE					8192L//动作组文件从这个地址开始存放
+//å­æ¾èµ·å§å°å
+#define MEM_LOBOT_LOGO_BASE					0L	//"LOBOT"å­æ¾åºå°åï¼ç¨äºè¯å«æ¯å¦æ¯æ°FLASH
+#define MEM_FRAME_INDEX_SUM_BASE			4096L//æ¯ä¸ªå¨ä½ç»æå¤å°å¨ä½ï¼ä»è¿ä¸ªå°åå¼å§å­æ¾ï¼å±è®¡256ä¸ªå¨ä½ç»
+#define MEM_ACT_FULL_BASE					8192L//å¨ä½ç»æä»¶ä»è¿ä¸ªå°åå¼å§å­æ¾
 
-//大小
-#define ACT_SUB_FRAME_SIZE					64L		//一个动作帧占64字节空间
-#define ACT_FULL_SIZE						16384L	//16KB,一套完整动作组占16KB字节
+//å¤§å°
+#define ACT_SUB_FRAME_SIZE					64L		//ä¸ä¸ªå¨ä½å¸§å 64å­èç©ºé´
+#define ACT_FULL_SIZE						16384L	//16KB,ä¸å¥å®æ´å¨ä½ç»å 16KBå­è
 
 #include "stdint.h"
 #include <Ticker.h>
@@ -76,14 +76,14 @@ typedef enum {
 } ButtonStageEnum;
 
 typedef enum {
-    BUTTON_EVENT_PRESSED = 0x01,           /**< @brief 按钮被按下 */
-    BUTTON_EVENT_LONGPRESS = 0x02,         /**< @brief 按钮被长按 */
-    BUTTON_EVENT_LONGPRESS_REPEAT = 0x04,  /**< @brief 按钮长按重触发 */
-    BUTTON_EVENT_RELEASE_FROM_LP = 0x08,   /**< @brief 按钮从长按中松开 */
-    BUTTON_EVENT_RELEASE_FROM_SP = 0x10,   /**< @brief 按钮从短按中松开 */
-    BUTTON_EVENT_CLICK = 0x20,             /**< @brief 按钮被点击 */
-    BUTTON_EVENT_DOUBLE_CLICK = 0x40,      /**< @brief 按钮被双击 */
-    BUTTON_EVENT_TRIPLE_CLICK = 0x80,      /**< @brief 按钮被三连击 */
+    BUTTON_EVENT_PRESSED = 0x01,           /**< @brief æé®è¢«æä¸ */
+    BUTTON_EVENT_LONGPRESS = 0x02,         /**< @brief æé®è¢«é¿æ */
+    BUTTON_EVENT_LONGPRESS_REPEAT = 0x04,  /**< @brief æé®é¿æéè§¦å */
+    BUTTON_EVENT_RELEASE_FROM_LP = 0x08,   /**< @brief æé®ä»é¿æä¸­æ¾å¼ */
+    BUTTON_EVENT_RELEASE_FROM_SP = 0x10,   /**< @brief æé®ä»ç­æä¸­æ¾å¼ */
+    BUTTON_EVENT_CLICK = 0x20,             /**< @brief æé®è¢«ç¹å» */
+    BUTTON_EVENT_DOUBLE_CLICK = 0x40,      /**< @brief æé®è¢«åå» */
+    BUTTON_EVENT_TRIPLE_CLICK = 0x80,      /**< @brief æé®è¢«ä¸è¿å» */
 } ButtonEventIDEnum;
 
 class Button_t{
@@ -128,7 +128,7 @@ class Flash_ctl_t{
 
 
 
-/* PWM舵机总控制器 */
+/* PWMèµæºæ»æ§å¶å¨ */
 class PwmServo_t{
     public:
         void init(void);
@@ -141,18 +141,18 @@ class PwmServo_t{
         int  read_offset(uint16_t servo_index);
         // int  save_offset(void);
         int  stop(uint16_t servo_index);
-        // 判断是否到达指定位置
+        // å¤æ­æ¯å¦å°è¾¾æå®ä½ç½®
         bool  is_ready(uint16_t servo_index);
         void deinit(void);
 };
 
-//宏函数 获得A的低八位
+//å®å½æ° è·å¾Açä½å«ä½
 #define GET_LOW_BYTE(A) (uint8_t)((A))
-//宏函数 获得A的高八位
+//å®å½æ° è·å¾Açé«å«ä½
 #define GET_HIGH_BYTE(A) (uint8_t)((A) >> 8)
-//宏函数 以A为高八位 B为低八位 合并为16位整形
+//å®å½æ° ä»¥Aä¸ºé«å«ä½ Bä¸ºä½å«ä½ åå¹¶ä¸º16ä½æ´å½¢
 #define BYTE_TO_HW(A, B) ((((uint16_t)(A)) << 8) | (uint8_t)(B))
-#define ID_ALL 254  //ID为254时，会向所有舵机进行广播，可用于读取未知ID的舵机信息
+#define ID_ALL 254  //IDä¸º254æ¶ï¼ä¼åææèµæºè¿è¡å¹¿æ­ï¼å¯ç¨äºè¯»åæªç¥IDçèµæºä¿¡æ¯
 #define LOBOT_SERVO_FRAME_HEADER         0x55
 #define LOBOT_SERVO_MOVE_TIME_WRITE      1
 #define LOBOT_SERVO_MOVE_TIME_READ       2
@@ -182,7 +182,7 @@ class PwmServo_t{
 #define LOBOT_SERVO_LED_CTRL_READ        34
 #define LOBOT_SERVO_LED_ERROR_WRITE      35
 #define LOBOT_SERVO_LED_ERROR_READ       36
-/* 总线舵机总控制器 */
+/* æ»çº¿èµæºæ»æ§å¶å¨ */
 class BusServo_t{
     public:
         void init(HardwareSerial* Serial_obj);

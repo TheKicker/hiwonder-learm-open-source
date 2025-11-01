@@ -5,7 +5,7 @@
 
 #define TYPE_PWM_SERVO		1
 #define TYPE_SERIAL_SERVO	2
-/* 机械臂舵机类型选择 */
+/* æºæ¢°èèµæºç±»åéæ© */
 #define SERVO_TYPE			TYPE_PWM_SERVO
 
 // arm.coordinate_set(15,0,2,0,-90,90,1000);

@@ -1,4 +1,4 @@
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 #include <Arduino.h>
 
 void Battery_t::init(uint8_t pin)

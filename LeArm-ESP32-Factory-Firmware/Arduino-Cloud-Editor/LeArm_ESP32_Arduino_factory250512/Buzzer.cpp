@@ -1,45 +1,45 @@
 #include <Arduino.h>
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 
-#define BUZZER_TASK_PERIOD  ((float)30) /* 蜂鸣器状态刷新间隔(ms) */
+#define BUZZER_TASK_PERIOD  ((float)30) /* èé¸£å¨ç¶æå·æ°é´é(ms) */
 
 static void buzzer_control_callback(Buzzer_t* obj)
 {
-  /* 尝试从队列中取的新的控制数据， 如果成功取出则重置状态机重新开始一个控制循环 */
+  /* å°è¯ä»éåä¸­åçæ°çæ§å¶æ°æ®ï¼ å¦ææåååºåéç½®ç¶ææºéæ°å¼å§ä¸ä¸ªæ§å¶å¾ªç¯ */
     if(obj->new_flag != 0) {
         obj->new_flag = 0;
         obj->stage = BUZZER_STAGE_START_NEW_CYCLE;
     }
-    /* 状态机处理 */
+    /* ç¶ææºå¤ç */
     switch(obj->stage) {
         case BUZZER_STAGE_START_NEW_CYCLE: {
             if(obj->ticks_on > 0 && obj->freq > 0) {
-                ledcWriteTone(obj->buzzer_channel , obj->freq); /* 鸣响蜂鸣器 */
-                if(obj->ticks_off > 0) {/* 静音时间不为 0 即为 嘀嘀响 否则就是长鸣 */
+                ledcWriteTone(obj->buzzer_channel , obj->freq); /* é¸£åèé¸£å¨ */
+                if(obj->ticks_off > 0) {/* éé³æ¶é´ä¸ä¸º 0 å³ä¸º ååå å¦åå°±æ¯é¿é¸£ */
                     obj->ticks_count = 0;
-                    obj->stage = BUZZER_STAGE_WATTING_OFF; /* 等到鸣响时间结束 */
+                    obj->stage = BUZZER_STAGE_WATTING_OFF; /* ç­å°é¸£åæ¶é´ç»æ */
                 }else{
-					obj->stage = BUZZER_STAGE_IDLE; /* 长鸣，转入空闲 */
+					obj->stage = BUZZER_STAGE_IDLE; /* é¿é¸£ï¼è½¬å¥ç©ºé² */
 				}
-            } else { /* 只要鸣响时间为 0 即为静音 */
+            } else { /* åªè¦é¸£åæ¶é´ä¸º 0 å³ä¸ºéé³ */
                 ledcWriteTone(obj->buzzer_channel , 0);
-				obj->stage = BUZZER_STAGE_IDLE;  /* 长静音，转入空闲 */
+				obj->stage = BUZZER_STAGE_IDLE;  /* é¿éé³ï¼è½¬å¥ç©ºé² */
             }
             break;
         }
         case BUZZER_STAGE_WATTING_OFF: {
             obj->ticks_count += BUZZER_TASK_PERIOD;
-            if(obj->ticks_count >= obj->ticks_on) { /* 鸣响时间结束 */
+            if(obj->ticks_count >= obj->ticks_on) { /* é¸£åæ¶é´ç»æ */
                 ledcWriteTone(obj->buzzer_channel , 0);
                 obj->stage = BUZZER_STAGE_WATTING_PERIOD_END;
             }
             break;
         }
-        case BUZZER_STAGE_WATTING_PERIOD_END: { /* 等待周期结束 */
+        case BUZZER_STAGE_WATTING_PERIOD_END: { /* ç­å¾å¨æç»æ */
             obj->ticks_count += BUZZER_TASK_PERIOD;
             if(obj->ticks_count >= (obj->ticks_off + obj->ticks_on)) {
                 obj->ticks_count -= (obj->ticks_off + obj->ticks_on);
-                if(obj->repeat == 1) { /* 剩余重复次数为1时就可以结束此次控制任务 */
+                if(obj->repeat == 1) { /* å©ä½éå¤æ¬¡æ°ä¸º1æ¶å°±å¯ä»¥ç»ææ­¤æ¬¡æ§å¶ä»»å¡ */
                     ledcWriteTone(obj->buzzer_channel , 0);
                     obj->stage = BUZZER_STAGE_IDLE;
                 } else {

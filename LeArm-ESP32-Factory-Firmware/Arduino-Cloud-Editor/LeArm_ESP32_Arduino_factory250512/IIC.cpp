@@ -6,10 +6,10 @@ void IIC::init(uint8_t sda, uint8_t scl)
 {
   Wire.setPins(sda, scl);
   Wire.begin();
-  // Wire.setClock(100000); // 设置为 100kHz
+  // Wire.setClock(100000); // è®¾ç½®ä¸º 100kHz
 }
 
-//写字节
+//åå­è
 bool IIC::wireWriteByte(uint8_t addr, uint8_t val)
 {
     Wire.beginTransmission(addr);
@@ -21,7 +21,7 @@ bool IIC::wireWriteByte(uint8_t addr, uint8_t val)
     return true;
 }
 
-//写多个字节（不用寄存器）
+//åå¤ä¸ªå­èï¼ä¸ç¨å¯å­å¨ï¼
 bool IIC::wireWritemultiByte(uint8_t addr, uint8_t *val, unsigned int len)
 {
     unsigned char i = 0;
@@ -37,7 +37,7 @@ bool IIC::wireWritemultiByte(uint8_t addr, uint8_t *val, unsigned int len)
     return true;
 }
 
-//读指定长度字节（不用寄存器）
+//è¯»æå®é¿åº¦å­èï¼ä¸ç¨å¯å­å¨ï¼
 int IIC::wireReadmultiByte(uint8_t addr, uint8_t *val, unsigned int len)
 {
     unsigned char i = 0;
@@ -56,7 +56,7 @@ int IIC::wireReadmultiByte(uint8_t addr, uint8_t *val, unsigned int len)
 }
 
 
-//写多个字节
+//åå¤ä¸ªå­è
 bool IIC::wireWriteDataArray(uint8_t addr, uint8_t reg,uint8_t *val,unsigned int len)
 {
     unsigned int i;
@@ -74,7 +74,7 @@ bool IIC::wireWriteDataArray(uint8_t addr, uint8_t reg,uint8_t *val,unsigned int
     return true;
 }
 
-//读指定长度字节
+//è¯»æå®é¿åº¦å­è
 int IIC::wireReadDataArray(uint8_t addr, uint8_t reg, uint8_t *val, unsigned int len)
 {
     unsigned char i = 0;  

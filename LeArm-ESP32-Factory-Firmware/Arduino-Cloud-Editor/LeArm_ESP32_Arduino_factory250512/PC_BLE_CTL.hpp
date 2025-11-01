@@ -1,12 +1,12 @@
 #ifndef __PC_BLE_CTL_HPP_
 #define __PC_BLE_CTL_HPP_
 
-#include "./../../Robot_arm.hpp"
+#include "Robot_arm.hpp"
 
 #define LEARM_VERSION 0x01
 
-#define APP_PACKET_HEADER                  0x55  /* 通信协议帧头 */
-#define APP_TX_DATA_LENGTH                   2  /* 除去帧头的发送端数据长度 */
+#define APP_PACKET_HEADER                  0x55  /* éä¿¡åè®®å¸§å¤´ */
+#define APP_TX_DATA_LENGTH                   2  /* é¤å»å¸§å¤´çåéç«¯æ°æ®é¿åº¦ */
 #define MAX_PACKET_LENGTH					64
 
 typedef enum
@@ -20,21 +20,21 @@ typedef enum
 
 typedef enum
 {
-	APP_VERSION_QUERY = 1, //固件查询
-	APP_SERVO_OFFSET_READ, //舵机偏差读取
-	APP_MULT_SERVO_MOVE, //控制单/多个舵机脉宽
-	APP_COORDINATE_SET, //坐标控制
+	APP_VERSION_QUERY = 1, //åºä»¶æ¥è¯¢
+	APP_SERVO_OFFSET_READ, //èµæºåå·®è¯»å
+	APP_MULT_SERVO_MOVE, //æ§å¶å/å¤ä¸ªèµæºèå®½
+	APP_COORDINATE_SET, //åæ æ§å¶
 
-	APP_ACTION_GROUP_RUN = 6, //动作组运行
-	APP_FULL_ACTION_STOP, //停止正在运行的动作组
-	APP_FULL_ACTION_ERASE, //将下载到控制板的动作组擦除
-	APP_CHASSIS_CONTROL,// 底盘控制
-	APP_SERVO_OFFSET_SET, //舵机偏差设置
-	APP_SERVO_OFFSET_DOWNLOAD,//舵机偏差下载
-	APP_SERVOS_RESET, //复位位姿
-	APP_SERVOS_READ, //读取舵机角度
+	APP_ACTION_GROUP_RUN = 6, //å¨ä½ç»è¿è¡
+	APP_FULL_ACTION_STOP, //åæ­¢æ­£å¨è¿è¡çå¨ä½ç»
+	APP_FULL_ACTION_ERASE, //å°ä¸è½½å°æ§å¶æ¿çå¨ä½ç»æ¦é¤
+	APP_CHASSIS_CONTROL,// åºçæ§å¶
+	APP_SERVO_OFFSET_SET, //èµæºåå·®è®¾ç½®
+	APP_SERVO_OFFSET_DOWNLOAD,//èµæºåå·®ä¸è½½
+	APP_SERVOS_RESET, //å¤ä½ä½å§¿
+	APP_SERVOS_READ, //è¯»åèµæºè§åº¦
 	
-	APP_ACTION_DOWNLOAD = 25, //动作组下载
+	APP_ACTION_DOWNLOAD = 25, //å¨ä½ç»ä¸è½½
 	APP_FUNC_NULL
 }AppFunctionStatus;
 

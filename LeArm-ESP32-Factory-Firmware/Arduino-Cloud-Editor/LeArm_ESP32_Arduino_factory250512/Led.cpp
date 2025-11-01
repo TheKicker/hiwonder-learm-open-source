@@ -1,49 +1,49 @@
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 #include <Arduino.h>
 
-#define LED_TASK_PERIOD     ((float)30) /* LED状态刷新间隔(ms) */
+#define LED_TASK_PERIOD     ((float)30) /* LEDç¶æå·æ°é´é(ms) */
 
-#define BATTERY_TASK_PERIOD ((float)50) /* 电池电量检测间隔(ms) */
+#define BATTERY_TASK_PERIOD ((float)50) /* çµæ± çµéæ£æµé´é(ms) */
 
 static void led_control_callback(Led_t* obj)
 {
-    /* 尝试从队列中取的新的控制数据， 如果成功取出则重置状态机重新开始一个控制循环 */
+    /* å°è¯ä»éåä¸­åçæ°çæ§å¶æ°æ®ï¼ å¦ææåååºåéç½®ç¶ææºéæ°å¼å§ä¸ä¸ªæ§å¶å¾ªç¯ */
     if(obj->new_flag != 0) {
         obj->new_flag = 0;
         obj->stage = LED_STAGE_START_NEW_CYCLE;
     }
-    /* 状态机处理 */
+    /* ç¶ææºå¤ç */
     switch(obj->stage) {
         case LED_STAGE_START_NEW_CYCLE: {
             if(obj->ticks_on > 0) {
                 digitalWrite(obj->led_pin,LOW);
-                if(obj->ticks_off > 0) { /* 熄灭时间不为 0 即为 闪烁否则为长亮 */
+                if(obj->ticks_off > 0) { /* çç­æ¶é´ä¸ä¸º 0 å³ä¸º éªçå¦åä¸ºé¿äº® */
                     obj->ticks_count = 0;
-                    obj->stage = LED_STAGE_WATTING_OFF; /* 等待 LED 灯亮起时间结束 */
+                    obj->stage = LED_STAGE_WATTING_OFF; /* ç­å¾ LED ç¯äº®èµ·æ¶é´ç»æ */
                 }else{
-                  obj->stage = LED_STAGE_IDLE; /* 长亮， 转入空闲 */
+                  obj->stage = LED_STAGE_IDLE; /* é¿äº®ï¼ è½¬å¥ç©ºé² */
                 }
-            } else { /* 只要亮起时间为 0 即为长灭 */
+            } else { /* åªè¦äº®èµ·æ¶é´ä¸º 0 å³ä¸ºé¿ç­ */
                 digitalWrite(obj->led_pin,HIGH);
-				        obj->stage = LED_STAGE_IDLE; /* 长灭， 转入空闲 */
+				        obj->stage = LED_STAGE_IDLE; /* é¿ç­ï¼ è½¬å¥ç©ºé² */
             }
             break;
         }
         case LED_STAGE_WATTING_OFF: {
             obj->ticks_count += LED_TASK_PERIOD;
-            if(obj->ticks_count >= obj->ticks_on) { /* LED 亮起时间结束 */
+            if(obj->ticks_count >= obj->ticks_on) { /* LED äº®èµ·æ¶é´ç»æ */
                 digitalWrite(obj->led_pin,HIGH);
                 obj->stage = LED_STAGE_WATTING_PERIOD_END;
             }
             break;
         }
-        case LED_STAGE_WATTING_PERIOD_END: { /* 等待周期结束 */
+        case LED_STAGE_WATTING_PERIOD_END: { /* ç­å¾å¨æç»æ */
             obj->ticks_count += LED_TASK_PERIOD;
             if(obj->ticks_count >= (obj->ticks_off + obj->ticks_on)) {
 				        obj->ticks_count -= (obj->ticks_off + obj->ticks_on);
-                if(obj->repeat == 1) { /* 剩余重复次数为1时就可以结束此次控制任务 */
+                if(obj->repeat == 1) { /* å©ä½éå¤æ¬¡æ°ä¸º1æ¶å°±å¯ä»¥ç»ææ­¤æ¬¡æ§å¶ä»»å¡ */
                     digitalWrite(obj->led_pin,HIGH);
-                    obj->stage = LED_STAGE_IDLE;  /* 重复次数用完， 转入空闲 */
+                    obj->stage = LED_STAGE_IDLE;  /* éå¤æ¬¡æ°ç¨å®ï¼ è½¬å¥ç©ºé² */
                 } else {
                     digitalWrite(obj->led_pin,LOW);
                     obj->repeat = obj->repeat == 0 ? 0 : obj->repeat - 1;

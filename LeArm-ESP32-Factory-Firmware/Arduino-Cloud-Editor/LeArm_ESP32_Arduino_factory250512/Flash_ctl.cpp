@@ -1,7 +1,7 @@
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 #include <Arduino.h>
 #include <SPI.h>
-#include "./../../Config.h"
+#include "Config.h"
 
 #define NORFLASH_CLK_PIN        FLASH_CLK    
 #define NORFLASH_MOSI_PIN       FLASH_DI   

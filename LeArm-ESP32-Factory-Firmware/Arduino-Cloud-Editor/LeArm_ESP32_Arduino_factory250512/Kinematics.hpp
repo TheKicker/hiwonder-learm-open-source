@@ -7,7 +7,7 @@
 /**
  * @file kinematics.hpp
  * @author Mobius
- * @brief 正逆运动学解算
+ * @brief æ­£éè¿å¨å­¦è§£ç®
  * @version 1.0
  * @date 2024-12-13
  *
@@ -17,7 +17,7 @@
  
  #define PI 3.1415926f
  
-/* 连杆序号按照从底部向上排序 单位：cm*/
+/* è¿æåºå·æç§ä»åºé¨åä¸æåº åä½ï¼cm*/
 #define LINKAGE_1    				 2.89f
 #define LINKAGE_2					 10.43f
 #define LINKAGE_3		 				8.9f
@@ -61,46 +61,46 @@ struct KinematicsObject
 };
 
 /**
- * @brief 弧度制转角度制
+ * @brief å¼§åº¦å¶è½¬è§åº¦å¶
  * 
  * @param  rad
- * @return 角度 
+ * @return è§åº¦ 
  */
 float rad2theta(float rad);
 
 /**
- * @brief 角度制转弧度制
+ * @brief è§åº¦å¶è½¬å¼§åº¦å¶
  * 
  * @param  theta
- * @return 弧度 
+ * @return å¼§åº¦ 
  */
 float theta2rad(float theta);
 
 /**
  * @brief 
  * 
- * @param  self		需要控制对象的指针
+ * @param  self		éè¦æ§å¶å¯¹è±¡çæé
  * @return NULL 
  */
 void kinematics_init(KinematicsObjectTypeDef* self);
 
 /**
- * @brief 逆运动学解算
+ * @brief éè¿å¨å­¦è§£ç®
  * 
- * @param  self		需要控制对象的指针
- * @return  K_OK		有解
- * 			INVAILD	无解
+ * @param  self		éè¦æ§å¶å¯¹è±¡çæé
+ * @return  K_OK		æè§£
+ * 			INVAILD	æ è§£
  */
 uint8_t ikine(KinematicsObjectTypeDef* self);
 
 /**
- * @brief 正运动学解算
+ * @brief æ­£è¿å¨å­¦è§£ç®
  * 
- * @param  knot0_theta	从下至上第1个关节角度
- * @param  knot1_theta	从下至上第2个关节角度
- * @param  knot2_theta	从下至上第3个关节角度
- * @param  knot3_theta	从下至上第4个关节角度
- * @return VectorObjectTypeDef类型结构体
+ * @param  knot0_theta	ä»ä¸è³ä¸ç¬¬1ä¸ªå³èè§åº¦
+ * @param  knot1_theta	ä»ä¸è³ä¸ç¬¬2ä¸ªå³èè§åº¦
+ * @param  knot2_theta	ä»ä¸è³ä¸ç¬¬3ä¸ªå³èè§åº¦
+ * @param  knot3_theta	ä»ä¸è³ä¸ç¬¬4ä¸ªå³èè§åº¦
+ * @return VectorObjectTypeDefç±»åç»æä½
  */
 VectorObjectTypeDef fkine(float knot0_theta, float knot1_theta, float knot2_theta, float knot3_theta);
 

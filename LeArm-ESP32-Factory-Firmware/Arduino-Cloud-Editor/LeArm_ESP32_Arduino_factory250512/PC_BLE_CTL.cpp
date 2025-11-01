@@ -1,6 +1,6 @@
 #include "PC_BLE_CTL.hpp"
 #include "string.h"
-#include "./../../Config.h"
+#include "Config.h"
 
 #define SERIAL_PC_BLE Serial
 
@@ -91,11 +91,11 @@ void PC_BLE_CTL::init(int pc_ble_flag)
   running_time = 200;
   unpack_successful = false;
   pinMode(IO_BLE_CTL, OUTPUT);
-  /* 控制蓝牙是否上电 */
-  if(pc_ble_flag == 0) // PC控制
+  /* æ§å¶èçæ¯å¦ä¸çµ */
+  if(pc_ble_flag == 0) // PCæ§å¶
   {
     digitalWrite(IO_BLE_CTL, LOW);
-  }else{ // 蓝牙控制
+  }else{ // èçæ§å¶
     digitalWrite(IO_BLE_CTL, HIGH);
   }
   pose.x = 15;
@@ -253,7 +253,7 @@ if(robot->get_servo_type() == 0){
           if(robot->action_group_save(packet.action_group_index, packet.action_frame_sum, 
                                       packet.action_frame_index, packet.buffer + 3,ACTION_FRAME_SIZE)>0)
           {
-            // 若动作组下载成功
+            // è¥å¨ä½ç»ä¸è½½æå
             buzzer->blink(1500 , 100 , 50 , 1);
           }
           delay(10);

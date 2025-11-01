@@ -1,21 +1,21 @@
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 #include <Arduino.h>
-#include "./../../Config.h"
+#include "Config.h"
 
 #include "Servo.h"
 #include <esp_timer.h>
 
 typedef struct {
-  uint8_t pin_id;          /**< ESP32 GPIO pin ID for the servo. ->舵机引脚*/
-  int current_pulsewidth;  /**< Current pulse width of the servo. ->当前脉宽*/
-  int actual_pulsewidth;   /**< Actual pulse width of the servo. --实际运行脉宽（已加offset）*/
-  bool pulsewidth_changed; /**< Flag indicating whether the pulse width has changed. ->脉宽变化标志位*/
-  bool is_running;         /**< Flag indicating whether the servo is running. ->舵机是否处在运行中的标志位*/
-  int target_pulsewidth;   /**< Target pulse width of the servo. ->目标脉宽*/
-  int offset;              /**< Offset value for the servo. ->舵机偏差*/
-  float pulsewidth_inc;    /**< Increment of pulse width per cycle (20ms). ->每周期脉宽的增量*/
-  uint32_t duration;       /**< Duration of the servo movement. Unit: ms ->舵机运行时间*/
-  int inc_num;             /**< Number of increments of pulse width. ->脉宽增量数*/
+  uint8_t pin_id;          /**< ESP32 GPIO pin ID for the servo. ->èµæºå¼è*/
+  int current_pulsewidth;  /**< Current pulse width of the servo. ->å½åèå®½*/
+  int actual_pulsewidth;   /**< Actual pulse width of the servo. --å®éè¿è¡èå®½ï¼å·²å offsetï¼*/
+  bool pulsewidth_changed; /**< Flag indicating whether the pulse width has changed. ->èå®½ååæ å¿ä½*/
+  bool is_running;         /**< Flag indicating whether the servo is running. ->èµæºæ¯å¦å¤å¨è¿è¡ä¸­çæ å¿ä½*/
+  int target_pulsewidth;   /**< Target pulse width of the servo. ->ç®æ èå®½*/
+  int offset;              /**< Offset value for the servo. ->èµæºåå·®*/
+  float pulsewidth_inc;    /**< Increment of pulse width per cycle (20ms). ->æ¯å¨æèå®½çå¢é*/
+  uint32_t duration;       /**< Duration of the servo movement. Unit: ms ->èµæºè¿è¡æ¶é´*/
+  int inc_num;             /**< Number of increments of pulse width. ->èå®½å¢éæ°*/
 
 } pwm_servo_obj_t;
 
@@ -89,10 +89,10 @@ static void IRAM_ATTR timer_update_callback(void *argv) {
   }
 }
 
-/* PWM舵机总控制器 */
+/* PWMèµæºæ»æ§å¶å¨ */
 void PwmServo_t::init(void)
 {
-  /*读取PWM舵机偏差（未完成）*/
+  /*è¯»åPWMèµæºåå·®ï¼æªå®æï¼*/
 
   for (int i = 0; i < SERVO_NUM; ++i) {
     servos[i].attach(pwm_servos[i].pin_id);

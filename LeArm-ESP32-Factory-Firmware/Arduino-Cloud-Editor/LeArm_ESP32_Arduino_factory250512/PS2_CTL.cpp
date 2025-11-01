@@ -1,7 +1,7 @@
-#include "PS2_ctl.hpp"
-#include "./../../Robot_arm.hpp"
-#include "./../../Hiwonder.hpp"
-#include "./../../Config.h"
+#include "PS2_CTL.hpp"
+#include "Robot_arm.hpp"
+#include "Hiwonder.hpp"
+#include "Config.h"
 
 #define Serial_PS2 Serial2
 TaskHandle_t PS2TaskHandle;
@@ -299,7 +299,7 @@ if(robot->get_servo_type() == 0){
         delay(800);
       }
 
-      // 动作组控制
+      // å¨ä½ç»æ§å¶
       if(keyvalue.bit_select == 1)
       {
         buzzer->blink(1500 , 100, 100, 1);

@@ -1,35 +1,35 @@
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 #include <Arduino.h>
-#include "./../../Config.h"
+#include "Config.h"
 
-#define BUTTON_TASK_PERIOD  ((float)30) /* 板载按键扫描间隔(ms) */
+#define BUTTON_TASK_PERIOD  ((float)30) /* æ¿è½½æé®æ«æé´é(ms) */
 
 static void button_scan(Button_t* obj, uint8_t id)
 {
     obj->bt_run[id-1].ticks_count += BUTTON_TASK_PERIOD;
 
     uint32_t pin = obj->read(id);
-    if(pin != obj->bt_run[id-1].last_pin_raw)  { /* 前后连续的两次IO状态不同认为按钮状态还不稳定，保存新的IO状态然后返回 */
+    if(pin != obj->bt_run[id-1].last_pin_raw)  { /* ååè¿ç»­çä¸¤æ¬¡IOç¶æä¸åè®¤ä¸ºæé®ç¶æè¿ä¸ç¨³å®ï¼ä¿å­æ°çIOç¶æç¶åè¿å */
         obj->bt_run[id-1].last_pin_raw = pin;
         return;
     }
 
-	  /* 按钮状态没有改变, 即状态机状态不会发生转移, 直接返回 */
+	  /* æé®ç¶ææ²¡ææ¹å, å³ç¶ææºç¶æä¸ä¼åçè½¬ç§», ç´æ¥è¿å */
     if(obj->bt_run[id-1].last_pin_filtered == obj->bt_run[id-1].last_pin_raw && obj->bt_run[id-1].stage == BUTTON_STAGE_NORMAL && obj->bt_run[id-1].combin_counter == 0) { 
         return;
     }
 
-    obj->bt_run[id-1].last_pin_filtered = obj->bt_run[id-1].last_pin_raw; /* 保存新的按钮状态 */
+    obj->bt_run[id-1].last_pin_filtered = obj->bt_run[id-1].last_pin_raw; /* ä¿å­æ°çæé®ç¶æ */
     switch(obj->bt_run[id-1].stage) {
         case BUTTON_STAGE_NORMAL: {
             if(obj->bt_run[id-1].last_pin_filtered) {
-                obj->event_callback(id, BUTTON_EVENT_PRESSED); /* 触发按键按下事件 */
-                if(obj->bt_run[id-1].ticks_count < obj->bt_run[id-1].combin_th && obj->bt_run[id-1].combin_counter > 0) { /* 只有在连击计数不为零时连击才起作用 */
+                obj->event_callback(id, BUTTON_EVENT_PRESSED); /* è§¦åæé®æä¸äºä»¶ */
+                if(obj->bt_run[id-1].ticks_count < obj->bt_run[id-1].combin_th && obj->bt_run[id-1].combin_counter > 0) { /* åªæå¨è¿å»è®¡æ°ä¸ä¸ºé¶æ¶è¿å»æèµ·ä½ç¨ */
                     obj->bt_run[id-1].combin_counter += 1;
-                    if(obj->bt_run[id-1].combin_counter == 2) {  /* 双击回调 */
+                    if(obj->bt_run[id-1].combin_counter == 2) {  /* åå»åè° */
                         obj->event_callback(id, BUTTON_EVENT_DOUBLE_CLICK);
                     }
-                    if(obj->bt_run[id-1].combin_counter == 3) {  /* 三连击回调 */
+                    if(obj->bt_run[id-1].combin_counter == 3) {  /* ä¸è¿å»åè° */
                         obj->event_callback(id, BUTTON_EVENT_TRIPLE_CLICK);
                     }
                 }
@@ -45,15 +45,15 @@ static void button_scan(Button_t* obj, uint8_t id)
 		    }
         case BUTTON_STAGE_PRESS: {
             if(obj->bt_run[id-1].last_pin_filtered) {
-                if(obj->bt_run[id-1].ticks_count > obj->bt_run[id-1].lp_th) { /* 超过长按触发时间 */
-                    obj->event_callback(id, BUTTON_EVENT_LONGPRESS); /* 触发长按事件 */
+                if(obj->bt_run[id-1].ticks_count > obj->bt_run[id-1].lp_th) { /* è¶è¿é¿æè§¦åæ¶é´ */
+                    obj->event_callback(id, BUTTON_EVENT_LONGPRESS); /* è§¦åé¿æäºä»¶ */
                     obj->bt_run[id-1].ticks_count = 0;
-                    obj->bt_run[id-1].stage = BUTTON_STAGE_LONGPRESS; /* 状态转为长按 */
+                    obj->bt_run[id-1].stage = BUTTON_STAGE_LONGPRESS; /* ç¶æè½¬ä¸ºé¿æ */
                 }
-            } else { /* 按钮松开 */
-                obj->event_callback(id, BUTTON_EVENT_RELEASE_FROM_SP); /* 触发短按松开事件 */
-                obj->event_callback(id, BUTTON_EVENT_CLICK);  /* 触发点击松开事件 */
-                obj->bt_run[id-1].combin_counter = obj->bt_run[id-1].combin_counter == 0 ? 1 : obj->bt_run[id-1].combin_counter; /* 只有在连击计数不为零时连击才起作用 */
+            } else { /* æé®æ¾å¼ */
+                obj->event_callback(id, BUTTON_EVENT_RELEASE_FROM_SP); /* è§¦åç­ææ¾å¼äºä»¶ */
+                obj->event_callback(id, BUTTON_EVENT_CLICK);  /* è§¦åç¹å»æ¾å¼äºä»¶ */
+                obj->bt_run[id-1].combin_counter = obj->bt_run[id-1].combin_counter == 0 ? 1 : obj->bt_run[id-1].combin_counter; /* åªæå¨è¿å»è®¡æ°ä¸ä¸ºé¶æ¶è¿å»æèµ·ä½ç¨ */
                 obj->bt_run[id-1].stage = BUTTON_STAGE_NORMAL;
             }
             break;
@@ -61,13 +61,13 @@ static void button_scan(Button_t* obj, uint8_t id)
         case BUTTON_STAGE_LONGPRESS: {
             if(obj->bt_run[id-1].last_pin_filtered) {
                 if(obj->bt_run[id-1].ticks_count > obj->bt_run[id-1].repeat_th)  {
-                    obj->event_callback(id, BUTTON_EVENT_LONGPRESS_REPEAT); /* 触发长按重复重复事件 */
-                    obj->bt_run[id-1].ticks_count = 0; /* 重新计时下一次重复触发 */
+                    obj->event_callback(id, BUTTON_EVENT_LONGPRESS_REPEAT); /* è§¦åé¿æéå¤éå¤äºä»¶ */
+                    obj->bt_run[id-1].ticks_count = 0; /* éæ°è®¡æ¶ä¸ä¸æ¬¡éå¤è§¦å */
                 }
-            } else { /* 按钮松开 */
-                obj->event_callback(id, BUTTON_EVENT_RELEASE_FROM_LP);  /* 触发长按松开事件 */
-                obj->bt_run[id-1].combin_counter = 0;                /* 长按不可连击, 连击计数为0时连击计数不生效 */
-                obj->bt_run[id-1].ticks_count = obj->bt_run[id-1].combin_th + 1; /* 长按不可连击, 让连击计时直接超时 */
+            } else { /* æé®æ¾å¼ */
+                obj->event_callback(id, BUTTON_EVENT_RELEASE_FROM_LP);  /* è§¦åé¿ææ¾å¼äºä»¶ */
+                obj->bt_run[id-1].combin_counter = 0;                /* é¿æä¸å¯è¿å», è¿å»è®¡æ°ä¸º0æ¶è¿å»è®¡æ°ä¸çæ */
+                obj->bt_run[id-1].ticks_count = obj->bt_run[id-1].combin_th + 1; /* é¿æä¸å¯è¿å», è®©è¿å»è®¡æ¶ç´æ¥è¶æ¶ */
                 obj->bt_run[id-1].stage = BUTTON_STAGE_NORMAL;
             }
             break;

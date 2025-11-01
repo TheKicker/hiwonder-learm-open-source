@@ -1,11 +1,11 @@
-#include "./../../Hiwonder.hpp"
+#include "Hiwonder.hpp"
 #include "stdint.h"
-#include "./../../Config.h"
+#include "Config.h"
 
 #define READ_LEVEL  LOW
 #define WRITE_LEVEL HIGH
 
-//校验和
+//æ ¡éªå
 uint8_t BusServo_t::CheckSum(uint8_t buf[])
 {
   uint8_t i;
@@ -25,7 +25,7 @@ void BusServo_t::init(HardwareSerial* Serial_obj)
   digitalWrite(BUS_EN,WRITE_LEVEL);
 }
 
-//解析接收到的数据包信息，并返回
+//è§£ææ¥æ¶å°çæ°æ®åä¿¡æ¯ï¼å¹¶è¿å
 int BusServo_t::ReceiveHandle(uint8_t *ret)
 {
   bool frameStarted = false;
@@ -78,7 +78,7 @@ int BusServo_t::ReceiveHandle(uint8_t *ret)
   }
   return 0;
 }
-//写入舵机ID
+//åå¥èµæºID
 void BusServo_t::SetID(uint8_t oldID, uint8_t newID)
 {
   uint8_t buf[7];
@@ -91,7 +91,7 @@ void BusServo_t::SetID(uint8_t oldID, uint8_t newID)
   SerialX->write(buf, 7);
 }
 
-//控制舵机转动
+//æ§å¶èµæºè½¬å¨
 void BusServo_t::set_position(uint8_t servo_ID, int16_t position, uint16_t duration)
 {
   uint8_t buf[10];
@@ -131,7 +131,7 @@ void BusServo_t::set_angle(uint16_t servo_ID, uint32_t angle, uint16_t duration)
   SerialX->write(buf, 10);
 }
 
-//读取ID
+//è¯»åID
 int BusServo_t::ReadID(void)
 {
   int count = 100; //10000
@@ -139,7 +139,7 @@ int BusServo_t::ReadID(void)
   uint8_t buf[6];
   
   buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = ID_ALL;  //ID_ALL为254，表示向所有舵机进行广播，可用于读取未知ID的舵机信息
+  buf[2] = ID_ALL;  //ID_ALLä¸º254ï¼è¡¨ç¤ºåææèµæºè¿è¡å¹¿æ­ï¼å¯ç¨äºè¯»åæªç¥IDçèµæºä¿¡æ¯
   buf[3] = 3;
   buf[4] = LOBOT_SERVO_ID_READ;
   buf[5] = CheckSum(buf);
@@ -167,7 +167,7 @@ int BusServo_t::ReadID(void)
   return ret;
 }
 
-//读取舵机位置
+//è¯»åèµæºä½ç½®
 int BusServo_t::read_position(uint8_t servo_ID)
 {
   int count = 10000;
@@ -238,7 +238,7 @@ int BusServo_t::read_angle(uint8_t servo_ID)
   return ret;
 }
 
-//读取偏差
+//è¯»ååå·®
 int BusServo_t::ReadDev(uint8_t id)
 {
   int count = 10000;
@@ -275,7 +275,7 @@ int BusServo_t::ReadDev(uint8_t id)
   return ret;
 }
 
-// 设置偏差
+// è®¾ç½®åå·®
 void BusServo_t::SetDev(uint8_t id, int8_t dev)
 {
   uint8_t buf[7];
@@ -290,7 +290,7 @@ void BusServo_t::SetDev(uint8_t id, int8_t dev)
 }
 
 
-// 保存偏差
+// ä¿å­åå·®
 void BusServo_t::SaveDev(uint8_t id)
 {
   uint8_t buf[6];
@@ -303,7 +303,7 @@ void BusServo_t::SaveDev(uint8_t id)
 }
 
 
-//读取转动范围
+//è¯»åè½¬å¨èå´
 int retL;
 int retH;
 int BusServo_t::ReadAngleRange(uint8_t id)
@@ -343,7 +343,7 @@ int BusServo_t::ReadAngleRange(uint8_t id)
   return ret;
 }
 
-//读取电压
+//è¯»åçµå
 int BusServo_t::ReadVin(uint8_t id)
 {
   int count = 10000;
@@ -378,7 +378,7 @@ int BusServo_t::ReadVin(uint8_t id)
   return ret;
 }
 
-//读取电压范围
+//è¯»åçµåèå´
 int vinL;
 int vinH;
 int BusServo_t::ReadVinLimit(uint8_t id)
@@ -418,7 +418,7 @@ int BusServo_t::ReadVinLimit(uint8_t id)
   return ret;
 }
 
-//读取温度报警阈值
+//è¯»åæ¸©åº¦æ¥è­¦éå¼
 int BusServo_t::ReadTempLimit(uint8_t id)
 {
   int count = 10000;
@@ -453,7 +453,7 @@ int BusServo_t::ReadTempLimit(uint8_t id)
   return ret;
 }
 
-//读取温度
+//è¯»åæ¸©åº¦
 int BusServo_t::ReadTemp(uint8_t id)
 {
   int count = 10000;
@@ -488,7 +488,7 @@ int BusServo_t::ReadTemp(uint8_t id)
   return ret;
 }
 
-//读取舵机状态
+//è¯»åèµæºç¶æ
 int BusServo_t::ReadLoadOrUnload(uint8_t id)
 {
   int count = 10000;
@@ -523,7 +523,7 @@ int BusServo_t::ReadLoadOrUnload(uint8_t id)
   return ret;
 }
 
-//设置舵机模式
+//è®¾ç½®èµæºæ¨¡å¼
 void BusServo_t::SetMode(uint8_t id, uint8_t Mode, int16_t Speed)
 {
   uint8_t buf[10];
@@ -541,7 +541,7 @@ void BusServo_t::SetMode(uint8_t id, uint8_t Mode, int16_t Speed)
   SerialX->write(buf, 10);
 }
 
-//舵机上电
+//èµæºä¸çµ
 void BusServo_t::Load(uint8_t id)
 {
   uint8_t buf[7];
@@ -555,7 +555,7 @@ void BusServo_t::Load(uint8_t id)
   SerialX->write(buf, 7);
 
 }
-//舵机掉电
+//èµæºæçµ
 void BusServo_t::Unload(uint8_t id)
 {
   uint8_t buf[7];
@@ -568,7 +568,7 @@ void BusServo_t::Unload(uint8_t id)
   
   SerialX->write(buf, 7);
 }
-//停止转动
+//åæ­¢è½¬å¨
 void BusServo_t::stop(uint8_t servo_ID)
 {
   uint8_t buf[6];

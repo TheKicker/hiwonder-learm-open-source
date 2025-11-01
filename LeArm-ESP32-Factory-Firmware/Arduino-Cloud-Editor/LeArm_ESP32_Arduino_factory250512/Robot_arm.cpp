@@ -1,6 +1,6 @@
-#include "./../../Robot_arm.hpp"
+#include "Robot_arm.hpp"
 
-/* 用于保存已有的动作组中各自的总动作帧数量 */
+/* ç¨äºä¿å­å·²æçå¨ä½ç»ä¸­åèªçæ»å¨ä½å¸§æ°é */
 uint8_t af_sum[ACTION_GROUP_MAX_NUM];	
 
 static float map(float x, float in_min, float in_max, float out_min, float out_max)
@@ -51,10 +51,10 @@ else{
 }
 
 /* 
- * 6号舵机 左+ 右-
- * 5号舵机 前+ 后-
- * 4号舵机 前- 后+
- * 3号舵机 前- 后+
+ * 6å·èµæº å·¦+ å³-
+ * 5å·èµæº å+ å-
+ * 4å·èµæº å- å+
+ * 3å·èµæº å- å+
  */
 uint8_t LeArm_t::coordinate_set(float target_x,float target_y,float target_z,float pitch,float min_pitch,float max_pitch,uint32_t time)
 {
@@ -122,7 +122,7 @@ uint8_t LeArm_t::coordinate_set(float target_x,float target_y,float target_z,flo
 }
 
 /*
- * 2号舵机 右转- 左转+
+ * 2å·èµæº å³è½¬- å·¦è½¬+
  */
 void LeArm_t::roll_set(float rotation_angle, uint32_t rotation_angle_time)
 {
@@ -144,7 +144,7 @@ else{
 }
 
 /*
- * 1号舵机 张开- 闭合+
+ * 1å·èµæº å¼ å¼- é­å+
  */
 void LeArm_t::claw_set(float open_angle, uint32_t open_angle_time)
 {
@@ -229,7 +229,7 @@ else{
 
 void LeArm_t::action_group_erase()
 {
-	/* 将所有动作组的动作帧数量设置为0，即代表将所有动作组擦除 */
+	/* å°ææå¨ä½ç»çå¨ä½å¸§æ°éè®¾ç½®ä¸º0ï¼å³ä»£è¡¨å°ææå¨ä½ç»æ¦é¤ */
     memset(af_sum, 0, sizeof(af_sum));
     flash_obj.erase_sector(ACTION_FRAME_SUM_BASE_ADDRESS);
     flash_obj.write(ACTION_FRAME_SUM_BASE_ADDRESS,(uint8_t*)af_sum,sizeof(af_sum));
@@ -268,12 +268,12 @@ if(servo_type == 0){
 // #endif
 }
 
-/* 一个的动作帧的数组内容
- * 控制的舵机数量：frame[0]
- * 运行时间：frame[1] + frame[2] << 8
- * 舵机id：frame[3 + i * 3]:
- * 舵机脉宽：frame[4 + i * 3] + frame[5 + i * 3] << 8
- * 0-动作帧运行失败 1-动作帧运行完成     0100 1101 0001
+/* ä¸ä¸ªçå¨ä½å¸§çæ°ç»åå®¹
+ * æ§å¶çèµæºæ°éï¼frame[0]
+ * è¿è¡æ¶é´ï¼frame[1] + frame[2] << 8
+ * èµæºidï¼frame[3 + i * 3]:
+ * èµæºèå®½ï¼frame[4 + i * 3] + frame[5 + i * 3] << 8
+ * 0-å¨ä½å¸§è¿è¡å¤±è´¥ 1-å¨ä½å¸§è¿è¡å®æ     0100 1101 0001
  */
 uint8_t frame[ACTION_FRAME_SIZE];
 uint8_t LeArm_t::action_frame_run(uint8_t action_group_index, uint8_t frame_index)
@@ -315,7 +315,7 @@ uint8_t LeArm_t::action_frame_run(uint8_t action_group_index, uint8_t frame_inde
 			delay(100);
 // #if (SERVO_TYPE == TYPE_PWM_SERVO)
 if(servo_type == 0){
-      /* 取一个舵机来判断是否来到达指定位置 */
+      /* åä¸ä¸ªèµæºæ¥å¤æ­æ¯å¦æ¥å°è¾¾æå®ä½ç½® */
 			if (pwmservo_obj.is_ready(0) && pwmservo_obj.is_ready(1) && pwmservo_obj.is_ready(2)
           && pwmservo_obj.is_ready(3) && pwmservo_obj.is_ready(4) && pwmservo_obj.is_ready(5))
       	{
@@ -361,7 +361,7 @@ bool LeArm_t::action_group_run(uint8_t action_group_index, uint8_t running_times
 				robot_arm.action_group.frame.index = 0;
 				flash_obj.read(ACTION_FRAME_SUM_BASE_ADDRESS + action_group_index,
 							&robot_arm.action_group.sum, 1);
-				/* 如果该动作组的动作帧数量大于0，则说明已经下载过动作 */
+				/* å¦æè¯¥å¨ä½ç»çå¨ä½å¸§æ°éå¤§äº0ï¼åè¯´æå·²ç»ä¸è½½è¿å¨ä½ */
 				robot_arm.action_group.status = robot_arm.action_group.sum > 0 ? \
 												ACTION_GROUP_RUNNING : ACTION_GROUP_IDLE;
 				break;
@@ -440,20 +440,20 @@ int LeArm_t::action_group_save(uint8_t action_group_index, uint8_t frame_num,uin
 	robot_arm.action_group.frame.index = frame_index;
 	ag_addr_offset = action_group_index * ACTION_GROUP_SIZE;
 	af_addr_offset = frame_index * ACTION_FRAME_SIZE;
-	page_offset = af_addr_offset % 256; // 正确计算页偏移
+	page_offset = af_addr_offset % 256; // æ­£ç¡®è®¡ç®é¡µåç§»
 	write_addr = ACTION_GROUP_BASE_ADDRESS + ag_addr_offset + af_addr_offset;
 	remaining_space = 256 - page_offset;
 	
-	/* 如果写入对应动作组的第一帧，则需要先擦除该动作组的所有内容 */
+	/* å¦æåå¥å¯¹åºå¨ä½ç»çç¬¬ä¸å¸§ï¼åéè¦åæ¦é¤è¯¥å¨ä½ç»çææåå®¹ */
 	if (frame_index == 0)
 	{
-		/* 一个动作组占8KB，擦除一个扇区是4KB，则需要擦除2次 */
+		/* ä¸ä¸ªå¨ä½ç»å 8KBï¼æ¦é¤ä¸ä¸ªæåºæ¯4KBï¼åéè¦æ¦é¤2æ¬¡ */
 		for (uint8_t i = 0; i < 2; i++)
 		{
 			flash_obj.erase_sector(ACTION_GROUP_BASE_ADDRESS + ag_addr_offset + (i * 4096));
 		}
 	}
-	/* 跨页写入处理，避免造成写入失败 若要在页尾保证1帧数据全部写入成功，那么页偏移的地址必须保证要不大于234(255 - 一帧的字节数21)*/
+	/* è·¨é¡µåå¥å¤çï¼é¿åé æåå¥å¤±è´¥ è¥è¦å¨é¡µå°¾ä¿è¯1å¸§æ°æ®å¨é¨åå¥æåï¼é£ä¹é¡µåç§»çå°åå¿é¡»ä¿è¯è¦ä¸å¤§äº234(255 - ä¸å¸§çå­èæ°21)*/
 	// if(page_offset > 234)
 	// {
 	// 	flash_obj.write(ACTION_GROUP_BASE_ADDRESS + ag_addr_offset + af_addr_offset, (uint8_t*)pdata, 256 - page_offset);
@@ -464,7 +464,7 @@ int LeArm_t::action_group_save(uint8_t action_group_index, uint8_t frame_num,uin
 	// 	flash_obj.write(ACTION_GROUP_BASE_ADDRESS + ag_addr_offset + af_addr_offset, (uint8_t*)pdata, size);
 	// }
 
-	/* 跨页写入处理 */
+	/* è·¨é¡µåå¥å¤ç */
     if (remaining_space < ACTION_FRAME_SIZE) {
         flash_obj.write(write_addr, pdata, remaining_space);
         flash_obj.write(write_addr + remaining_space, pdata + remaining_space, ACTION_FRAME_SIZE - remaining_space);
@@ -476,7 +476,7 @@ int LeArm_t::action_group_save(uint8_t action_group_index, uint8_t frame_num,uin
 	// memcpy(write_frame[frame_index], pdata, size);
 	if ((robot_arm.action_group.frame.index + 1) == frame_num)
 	{
-		/* 如果写入的是最后一帧，此时需要更新一下flash中对应动作组的动作帧总数 */
+		/* å¦æåå¥çæ¯æåä¸å¸§ï¼æ­¤æ¶éè¦æ´æ°ä¸ä¸flashä¸­å¯¹åºå¨ä½ç»çå¨ä½å¸§æ»æ° */
 		flash_obj.read(ACTION_FRAME_SUM_BASE_ADDRESS,af_sum, sizeof(af_sum));
 		af_sum[robot_arm.action_group.index] = frame_num;
 		flash_obj.erase_sector(ACTION_FRAME_SUM_BASE_ADDRESS);
@@ -487,7 +487,7 @@ int LeArm_t::action_group_save(uint8_t action_group_index, uint8_t frame_num,uin
 	return 0;
 }
 
-// 0：PWM舵机 ， 1：总线舵机
+// 0ï¼PWMèµæº ï¼ 1ï¼æ»çº¿èµæº
 uint8_t LeArm_t::read_servo_type(void)
 {
 	for(int i = 0 ; i < 6 ; i++){
