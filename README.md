@@ -2,6 +2,9 @@
 
 ![LeArm 6DOF Robot Arm](reference-materials/servos.png)
 
+> SUCCESS: <br>
+> This project has been a success, see [LeArm-ESP32-Factory-Firmware/README.md](LeArm-ESP32-Factory-Firmware/README.md). Had to overcome some hardware and software hurdles. 
+
 This GitHub repository is my personal attempt to get the **HiWonder LeArm Robotic Arm Kit (6DOF) Open Source** working after purchase.  
 
 - **Product link:** [HiWonder LeArm on Amazon](https://www.amazon.com/dp/B0FJFVV6C7?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1)  
@@ -31,7 +34,7 @@ I purchased this kit to explore Arduino-based robotics and STEM projects. After 
 - I tried the iPad app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
 - I tried the Playstion 2 (PS2) Controller that came in the box, confirmed connection with solid green lights (according to documentation), but it totally ignored anything I pressed.
 - I tried the LeArm.exe Windows Desktop app and same message as 1 and 2, the robot was not in a certain control mode. Please restart.
-- I tried arduino, and keep getting different errors about the built in open source libraries not being found or using old function/variable references and the robot/Espressif ESP32-WROOM32D board being completely unresponsive.
+- I tried Arduino IDE, and keep getting different errors about the built in open source libraries not being found or using old function/variable references and the robot/Espressif ESP32-WROOM32D board being completely unresponsive.
 
 I'm really trying to make a fun hobby robot project out of an imperfect product.
 But it's getting frustrating.
