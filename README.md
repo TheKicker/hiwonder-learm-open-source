@@ -1,13 +1,24 @@
 # HiWonder LeArm Open Source Effort
 
-![LeArm](https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/1e663318-73fc-4cce-b78a-34f197be3b5d._CR0%2C0%2C1000%2C1000_SX200_.png)
+![LeArm 6DOF Robot Arm](reference-materials/servos.png)
 
 This GitHub repository is my personal attempt to get the **HiWonder LeArm Robotic Arm Kit (6DOF) Open Source** working after purchase.  
 
 **Product link:** [HiWonder LeArm on Amazon](https://www.amazon.com/dp/B0FJFVV6C7?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1)  
 **Official Wiki:** [HiWonder LeArm Wiki](https://wiki.hiwonder.com/projects/LeArm_AI/en/latest/docs/1.Geting_Ready.html)  
-**Additional Docs (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1vwAXIoUjviLJAhGvHmiILseAW0N5tj59?usp=drive_link)
+**Additional Docs (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1vwAXIoUjviLJAhGvHmiILseAW0N5tj59)
+**Factory Firmware (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1JufiqiCjYjH1hNJEh8xa6O496BbO982L)
+**Espressif ESP32 Board Manager URL:** [ESP32 Dev Module](https://espressif.github.io/arduino-esp32/package_esp32_index.json)
 
+
+```
+
+## Versions
+
+Arduino IDE: 2.3.6
+ESP32 by Espressif Systems: 3.3.2
+
+```
 ---
 
 ## Background
@@ -16,11 +27,12 @@ I purchased this kit to explore Arduino-based robotics and STEM projects. After 
 
 - I tried the iPhone app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
 - I tried the iPad app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
-- I tried the Playstion 2 (PS2) Controller that came in the box, totally ignored anything I pressed.
+- I tried the Playstion 2 (PS2) Controller that came in the box, confirmed connection with solid green lights (according to documentation), but it totally ignored anything I pressed.
 - I tried the LeArm.exe Windows Desktop app and same message as 1 and 2, the robot was not in a certain control mode. Please restart.
 - I tried arduino, and keep getting different errors about the built in open source libraries not being found or using old function/variable references and the robot/Espressif ESP32-WROOM32D board being completely unresponsive.
 
-I'm really trying to make a fun hobby robot project out of a crappy unfinished product. Completely Chinese junk. But it's getting frustrating.
+I'm really trying to make a fun hobby robot project out of an imperfect product.
+But it's getting frustrating.
 
 This repo exists to document my efforts to make this kit functional and to gather fixes, improvements, and translations of Chinese resources to English.
 
@@ -30,18 +42,22 @@ This repo exists to document my efforts to make this kit functional and to gathe
 
 ```
 hiwonder-learm-open-source/
-├── led-lights/             # Code for controlling the LEDs on ESP32
-├── libraries/              # Arduino libraries needed for the arm as I add them
-├── README.md               # This file
-└── reference-materials/    # PDFs, 3D models, and electrical drawings
-    ├── 3d-models/          
+├── LeArm-ESP32-Factory-Firmware/   # Factory Firmware via Customer Support
+├── led-lights/                     # Code for controlling the LEDs on ESP32
+├── libraries/                      # Arduino libraries needed for the arm as I add them
+├── README.md                       # This file
+└── reference-materials/            # PDFs, 3D models, and electrical drawings
+    ├── 3d-models/                  # Not all models included (Github size limit)
     ├── electrical-drawings/
     │   ├── CHINESE-SCH-*.pdf
-    │   └── ENGLISH-SCH-*.pdf
-    ├── A00-build-instructions.pdf
+    │   └── ENGLISH-SCH-*.pdf       # Did my best to translate
+    ├── A00-build-instructions.pdf  # Original build instructions 
     ├── A01-introduction.pdf
     ├── A02-controller.pdf
-    └── A03-deviation.pdf
+    ├── A03-deviation.pdf
+    ├── controller-board.png    # Hi-Definition image For referencing pins
+    ├── ESP32.png               # Hi-Definition image For referencing ESP32 Board
+    └── servos.png              # Hi-Definition image For referencing servos
 ```
 
 **Electrical Drawings:**  
@@ -69,7 +85,9 @@ Contributions are welcome! If you have experience with Arduino, robotics, or can
 - Kit assembled successfully, all servos and mechanical parts physically installed according to instructions. 
 - Electronics are all connected, but initial tests produce **no response** whatsoever.  
 - Documentation and reference material collected for troubleshooting.  
-- Open to experimenting with code, firmware, and Arduino examples.  
+- Open to experimenting with code, firmware, and Arduino examples.
+- I have found that GPIO Port 27 will make the buzzer work.
+- I have found I can make the LED on the ESP32 board work (LED SOS code included above with a reference to the RMS Titanic)  
 
 ---
 
