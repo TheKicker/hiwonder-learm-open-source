@@ -40,6 +40,31 @@ This repo exists to document my efforts to make this kit functional and to gathe
 
 ---
 
+## Logs and Compiler Fails on Arduino IDE
+
+Through an enormous amount of trial and error, found that something is happening within the Windows Cache and Arduino IDE. Despite clearing all files, uninstalling, and reinstalling the IDE, the following error kept showing up.
+
+- verified I had the right board & port selected
+- verified I had the right libraries included in the script
+
+```
+C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino: In function 'void setup()': C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino:4:3: error: 'ledcSetup' was not declared in this scope     
+        4 | ledcSetup(0, 1000, 8); 
+          | ^~~~~~~~~ 
+C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino:5:3: error: 'ledcAttachPin' was not declared in this scope; did you mean 'ledcAttach'? 
+        5 | ledcAttachPin(2, 0); 
+          | ^~~~~~~~~~~~~ 
+          | ledcAttach exit status 1 
+
+Compilation error: 'ledcSetup' was not declared in this scope
+```
+
+Since downloading [Arduino Cloud Agent](https://cloud.arduino.cc/download-agent/) and using the Arduino Cloud Editor, I've been able to push the same exact snippet of code to the board allowing a successful compile and upload of the LED SOS INO script.  Additionally, I was able to play a simple melody using the controller board buzzer.
+
+We're getting closer ya'll.
+
+---
+
 ## Repository Structure (explanation of files)
 
 ```
@@ -89,6 +114,7 @@ Contributions are welcome! If you have experience with Arduino, robotics, or can
 - Electronics are all connected according to documentation, but initial tests produce **no response** whatsoever.  
 - Documentation and reference material collected for troubleshooting, unfortunately a lot of it is in Chinese which I don't speak.  
 - Open to experimenting with code, firmware, and Arduino examples.
+- There is some funny business between the Windows caching system and Arduino IDE. Do not use it. Download the Arduino Cloud Agent and use the Arduino Cloud Editor.
 - I have found that GPIO Port 27 will make the buzzer work.
 - I have found I can make the LED on the ESP32 board work (LED SOS code included above with a reference to the RMS Titanic)  
 
