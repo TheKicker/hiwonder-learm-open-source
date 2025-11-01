@@ -25,7 +25,7 @@ ESP32 by Espressif Systems: 3.3.2
 
 I purchased this kit to explore Arduino-based robotics and STEM projects. After carefully assembling it in a little over **4 hours** and triple-checking every step, I plugged it in annnnnnd **nothing worked**.  It was supposed to go to a home position, etc. 
 
-![LeArm iPhone Error: The robot is not currently in app control mode](reference-materials/iphone-error.png)
+![LeArm iPhone Error: The robot is not currently in app control mode](reference-materials/iphone-error.PNG)
 
 - I tried the iPhone app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
 - I tried the iPad app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
