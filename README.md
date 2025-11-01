@@ -40,7 +40,7 @@ This repo exists to document my efforts to make this kit functional and to gathe
 
 ---
 
-## Repository Structure
+## Repository Structure (explanation of files)
 
 ```
 hiwonder-learm-open-source/
