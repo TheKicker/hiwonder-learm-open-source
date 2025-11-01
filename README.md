@@ -1,6 +1,6 @@
 # HiWonder LeArm Open Source Effort
 
-![LeArm](https://images-na.ssl-images-amazon.com/images/I/81tKZcE1jSL._AC_SL1500_.jpg)
+![LeArm](https://www.amazon.com/stores/page/F831EB5A-A2F2-45C6-9D1C-5EA8EB33136D?ingress=2&lp_context_asin=B0FJFVV6C7&visitId=2a151ad0-5a80-4abc-8b23-ecf35a2b0c5e&store_ref=bl_ast_dp_brandLogo_sto&ref_=ast_bln)
 
 This GitHub repository is my personal attempt to get the **HiWonder LeArm Robotic Arm Kit (6DOF)** working after purchase.  
 
