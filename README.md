@@ -4,11 +4,11 @@
 
 This GitHub repository is my personal attempt to get the **HiWonder LeArm Robotic Arm Kit (6DOF) Open Source** working after purchase.  
 
-**Product link:** [HiWonder LeArm on Amazon](https://www.amazon.com/dp/B0FJFVV6C7?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1)  
-**Official Wiki:** [HiWonder LeArm Wiki](https://wiki.hiwonder.com/projects/LeArm_AI/en/latest/docs/1.Geting_Ready.html)  
-**Additional Docs (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1vwAXIoUjviLJAhGvHmiILseAW0N5tj59)
-**Factory Firmware (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1JufiqiCjYjH1hNJEh8xa6O496BbO982L)
-**Espressif ESP32 Board Manager URL:** [ESP32 Dev Module](https://espressif.github.io/arduino-esp32/package_esp32_index.json)
+- **Product link:** [HiWonder LeArm on Amazon](https://www.amazon.com/dp/B0FJFVV6C7?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1)  
+- **Official Wiki:** [HiWonder LeArm Wiki](https://wiki.hiwonder.com/projects/LeArm_AI/en/latest/docs/1.Geting_Ready.html)  
+- **Additional Docs (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1vwAXIoUjviLJAhGvHmiILseAW0N5tj59)
+- **Factory Firmware (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1JufiqiCjYjH1hNJEh8xa6O496BbO982L)
+- **Espressif ESP32 Board Manager URL:** [ESP32 Dev Module](https://espressif.github.io/arduino-esp32/package_esp32_index.json)
 
 
 ```
@@ -24,6 +24,8 @@ ESP32 by Espressif Systems: 3.3.2
 ## Background
 
 I purchased this kit to explore Arduino-based robotics and STEM projects. After carefully assembling it in a little over **4 hours** and triple-checking every step, I plugged it in annnnnnd **nothing worked**.  It was supposed to go to a home position, etc. 
+
+![LeArm iPhone Error: The robot is not currently in app control mode](reference-materials/iphone-error.png)
 
 - I tried the iPhone app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
 - I tried the iPad app, it told me “LeArm is currently not in app control mode. Please restart the robot and switch to app control mode before proceeding!”
@@ -80,11 +82,12 @@ Contributions are welcome! If you have experience with Arduino, robotics, or can
 
 ---
 
-## Notes / Current Status
+## Notes / Current Status / Learnings
 
 - Kit assembled successfully, all servos and mechanical parts physically installed according to instructions. 
-- Electronics are all connected, but initial tests produce **no response** whatsoever.  
-- Documentation and reference material collected for troubleshooting.  
+- The kit is mechanically sound, well crafted aluminum parts and heavy base.
+- Electronics are all connected according to documentation, but initial tests produce **no response** whatsoever.  
+- Documentation and reference material collected for troubleshooting, unfortunately a lot of it is in Chinese which I don't speak.  
 - Open to experimenting with code, firmware, and Arduino examples.
 - I have found that GPIO Port 27 will make the buzzer work.
 - I have found I can make the LED on the ESP32 board work (LED SOS code included above with a reference to the RMS Titanic)  
@@ -105,6 +108,8 @@ Contributions are welcome! If you have experience with Arduino, robotics, or can
 3. Translate additional Chinese resources if possible.  
 4. Submit PRs with fixes, sketches, or documentation improvements.  
 5. Report bugs or issues in GitHub Issues.
+
+---
 
 ---
 
