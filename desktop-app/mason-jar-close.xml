@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<NewDataSet>
+  <Type>PWM Servo</Type>
+  <Table>
+    <ID>1</ID>
+    <Move>#1 P600 #2 P1500 #3 P1500 #4 P1500 #5 P1500 #6 P1500</Move>
+    <Time>T1000</Time>
+    <ID>2</ID>
+    <Move>#1 P600 #2 P1500 #3 P500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T1000</Time>
+    <ID>3</ID>
+    <Move>#1 P600 #2 P500 #3 P500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T1500</Time>
+    <ID>4</ID>
+    <Move>#1 P600 #2 P2500 #3 P500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T3000</Time>
+    <ID>5</ID>
+    <Move>#1 P600 #2 P1500 #3 P500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T1500</Time>
+    <ID>6</ID>
+    <Move>#1 P600 #2 P1500 #3 P1500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T1500</Time>
+    <ID>7</ID>
+    <Move>#1 P1500 #2 P1500 #3 P1500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>8</ID>
+    <Move>#1 P600 #2 P1500 #3 P1500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>9</ID>
+    <Move>#1 P1500 #2 P1500 #3 P1500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>10</ID>
+    <Move>#1 P600 #2 P1500 #3 P1500 #4 P500 #5 P1500 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>11</ID>
+    <Move>#1 P600 #2 P1500 #3 P900 #4 P1500 #5 P1606 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>12</ID>
+    <Move>#1 P1069 #2 P1500 #3 P900 #4 P1500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>13</ID>
+    <Move>#1 P1069 #2 P1500 #3 P900 #4 P500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>14</ID>
+    <Move>#1 P1069 #2 P500 #3 P900 #4 P500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>15</ID>
+    <Move>#1 P1069 #2 P2500 #3 P900 #4 P500 #5 P1600 #6 P1500</Move>
+    <Time>T4000</Time>
+    <ID>16</ID>
+    <Move>#1 P1069 #2 P500 #3 P900 #4 P500 #5 P1600 #6 P1500</Move>
+    <Time>T4000</Time>
+    <ID>17</ID>
+    <Move>#1 P1069 #2 P2500 #3 P900 #4 P500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>18</ID>
+    <Move>#1 P1069 #2 P1500 #3 P900 #4 P500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>19</ID>
+    <Move>#1 P1069 #2 P1500 #3 P900 #4 P1500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>20</ID>
+    <Move>#1 P600 #2 P1500 #3 P900 #4 P1500 #5 P1600 #6 P1500</Move>
+    <Time>T2000</Time>
+    <ID>21</ID>
+    <Move>#1 P1500 #2 P1500 #3 P1500 #4 P1500 #5 P1500 #6 P1500</Move>
+    <Time>T3000</Time>
+  </Table>
+</NewDataSet>

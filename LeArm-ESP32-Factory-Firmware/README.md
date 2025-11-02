@@ -2,7 +2,9 @@
 
 The ZIP drive in this directory is what I received from HiWonder Support (support@hiwonder.com).  It contains the factory default firmware for the LeArm 6DOF robotic arm kit.
 
-Trying to install via Arduino IDE is downright impossible. It is riddled with errors, and if you tried - you may get stuck in an endless loop of debugging like I did from the way Windows is caching files.  Think you fixed one and another pops up. Example output below: 
+***I believe the robot I recieved had corrupt or missing firmware. Thus it was unusable out of the box. Through some effort, Arduino community help, my background in software, ChatGPT, and a bit of luck... I was able to get it working.***
+
+Through troubleshooting I have found that trying to install via Arduino IDE is downright impossible. It is riddled with errors, and if you tried - you may get stuck in an endless loop of debugging like I did from the way Windows is caching files.  Think you fixed one and another pops up. Example output below: 
 
 ```
 C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino: In function 'void setup()': C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino:4:3: error: 'ledcSetup' was not declared in this scope     

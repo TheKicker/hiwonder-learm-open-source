@@ -1,2 +1,7 @@
 # Ignore any other large files
 *.3dm
+
+# Ignore Temporary Folders and Files
+**/temp/
+*.tmp
+**/temp
