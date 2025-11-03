@@ -1,11 +1,11 @@
-# HiWonder LeArm Open Source Effort
+# HiWonder LeArm Open Source Issues & Troubleshooting
 
 ![LeArm 6DOF Robot Arm](reference-materials/servos.png)
 
-> SUCCESS: <br>
+> <span style="color:green">SUCCESS: </span><br>
 > This project has been a success, see [LeArm-ESP32-Factory-Firmware/README.md](LeArm-ESP32-Factory-Firmware/README.md). Had to overcome some hardware and software hurdles. 
 
-This GitHub repository is my personal attempt to get the **HiWonder LeArm Robotic Arm Kit (6DOF) Open Source** working after purchase.  
+This GitHub repository is my personal attempt to get the **HiWonder LeArm Robotic Arm Kit (6DOF) Open Source** working directly after purchase.  
 
 - **Product link:** [HiWonder LeArm on Amazon](https://www.amazon.com/dp/B0FJFVV6C7?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1)  
 - **Official Wiki:** [HiWonder LeArm Wiki](https://wiki.hiwonder.com/projects/LeArm_AI/en/latest/docs/1.Geting_Ready.html)  
@@ -13,20 +13,30 @@ This GitHub repository is my personal attempt to get the **HiWonder LeArm Roboti
 - **Factory Firmware (Google Drive):** [Google Repo](https://drive.google.com/drive/folders/1JufiqiCjYjH1hNJEh8xa6O496BbO982L)
 - **Espressif ESP32 Board Manager URL:** [ESP32 Dev Module](https://espressif.github.io/arduino-esp32/package_esp32_index.json)
 
-
 ```
-
 ## Versions
 
-Arduino IDE: 2.3.6
+Arduino IDE: 2.3.6 # USE ARDUINO CLOUD EDITOR INSTEAD (Install board manager from link above)
 ESP32 by Espressif Systems: 3.3.2
 
 ```
+
+### Servo Information
+
+| Servo        | Axis | Rotation Speed        | Stall Torque                | Rotation Range | Servo Accuracy |
+|---------------|------|----------------------|-----------------------------|----------------|----------------|
+| LDX-218       | 4, 5    | 0.16sec / 60° / 7.4v | 15kg.cm / 6v <br> 17kg.cm / 7.4v | 0-180°         | 0.3°           |
+| LD-1501 MG    | 6    | 0.16sec / 60° / 7.4v | 15kg.cm / 6v <br> 17kg.cm / 7.4v | 0-180°         | 0.3°           |
+| LDX-335 MG    | 1    | 0.18sec / 60° / 7.4v | 20kg.cm / 7.4v               | 0-180°         | 0.3°           |
+| LFD-06 MG     | 2, 3    | 0.25sec / 60° / 7.4v | 6kg.cm / 7.4v                | 0-180°         | 0.3°           |
+
+Source: [A02-Controller.pdf](reference-materials/A02-Controller.pdf)
+
 ---
 
 ## Background
 
-I purchased this kit to explore Arduino-based robotics and STEM projects. After carefully assembling it in a little over **4 hours** and triple-checking every step, I plugged it in annnnnnd **nothing worked**.  It was supposed to go to a home position, etc. 
+I purchased this kit to explore Arduino-based robotics and STEM projects. After carefully assembling it in a little over **3.5-4 hours** and triple-checking every step, I plugged it in annnnnnd **nothing worked**.  Immediately after power up it was supposed to go to a home position, etc. 
 
 ![LeArm iPhone Error: The robot is not currently in app control mode](reference-materials/iphone-error.PNG)
 
@@ -45,10 +55,11 @@ This repo exists to document my efforts to make this kit functional and to gathe
 
 ## Logs and Compiler Fails on Arduino IDE
 
-Through an enormous amount of trial and error, found that something is happening within the Windows Cache and Arduino IDE. Despite clearing all files, uninstalling, and reinstalling the IDE, the following error kept showing up.
-
+Through an enormous amount of trial and error, found that something is happening within the Windows Cache and Arduino IDE.
 - verified I had the right board & port selected
 - verified I had the right libraries included in the script
+
+Despite clearing all files, uninstalling, and reinstalling the IDE, the following error kept showing up.
 
 ```
 C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino: In function 'void setup()': C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8axvd\sketch\sketch.ino:4:3: error: 'ledcSetup' was not declared in this scope     
@@ -62,9 +73,7 @@ C:\Users\TheKicker\AppData\Local\Temp\.arduinoIDE-unsaved2025101-26284-elnxva.8a
 Compilation error: 'ledcSetup' was not declared in this scope
 ```
 
-Since downloading [Arduino Cloud Agent](https://cloud.arduino.cc/download-agent/) and using the Arduino Cloud Editor, I've been able to push the same exact snippet of code to the board allowing a successful compile and upload of the LED SOS INO script.  Additionally, I was able to play a simple melody using the controller board buzzer.
-
-We're getting closer ya'll.
+Since downloading [Arduino Cloud Agent](https://cloud.arduino.cc/download-agent/) and using the Arduino Cloud Editor, I've been able to push the same exact snippet of code to the board allowing a successful compile and upload of the LED SOS INO script.  Additionally, to test functionality I was able to play a simple melody using the controller board buzzer.
 
 ---
 
@@ -118,33 +127,32 @@ Contributions are welcome! If you have experience with Arduino, robotics, or can
 - Documentation and reference material collected for troubleshooting, unfortunately a lot of it is in Chinese which I don't speak.  
 - Open to experimenting with code, firmware, and Arduino examples.
 - There is some funny business between the Windows caching system and Arduino IDE. Do not use it. Download the Arduino Cloud Agent and use the Arduino Cloud Editor.
-- I have found that GPIO Port 27 will make the buzzer work.
+- I have found that GPIO Port 27 will make the buzzer work. (found through trial and error, but if you visit [LeArm-ESP32-Factory-Firmware/Arduino-Cloud-Editor/LeArm_ESP32_Arduino_factory250512/Config.h](LeArm-ESP32-Factory-Firmware/Arduino-Cloud-Editor/LeArm_ESP32_Arduino_factory250512/Config.h) you can find all of the associated ports.)
 - I have found I can make the LED on the ESP32 board work (LED SOS code included above with a reference to the RMS Titanic)  
 
 ---
 
-## References
+## Outcome
 
-- [HiWonder Official Wiki](https://wiki.hiwonder.com/projects/LeArm_AI/en/latest/docs/1.Geting_Ready.html)  
-- [Google Drive Reference Materials](https://drive.google.com/drive/folders/1vwAXIoUjviLJAhGvHmiILseAW0N5tj59?usp=drive_link)  
+There were multiple actually. I contacted official support channels (support@hiwonder.com) and received a ZIP folder with the factory default firmware for the LeArm 6DOF robot arm. My gut feeling is that the unit came with completely missing or corrupt firmware, and trying to fix it with the Arduino Desktop IDE was a nightmare. Constant 'multiple definition' errors from Windows file caching and typos/file naming mismatches. After switching to the Arduino Cloud Editor, flattening the factory firmware into a single folder, cleaning up referenced file paths, and a few other things - the firmware finally compiled and uploaded. 
 
----
-
-## How to Help
-
-1. Fork this repo.  
-2. Test Arduino sketches with your own LeArm kit.  
-3. Translate additional Chinese resources if possible.  
-4. Submit PRs with fixes, sketches, or documentation improvements.  
-5. Report bugs or issues in GitHub Issues.
-
----
+Full details and troubleshooting steps in the link below:<br>
+[LeArm-ESP32-Factory-Firmware/README.md](LeArm-ESP32-Factory-Firmware/README.md)
 
 ---
 
 **Disclaimer:** This project is experimental. I am doing my best to make a functional robotic arm out of what was initially a non-working purchase. Use at your own risk.  
 
+This experience is mine, and yours may be much better - I fully encourage any and all to grab a desktop robot arm. 
+
 ---
 
-*PS: I’m determined to make this kit work, one step at a time.*
+"There are an endless number of things to discover about robotics. A lot of it is just too fantastic for people to believe.""
 
+<strong>Daniel H. Wilson</strong>
+
+
+
+"Hands-on experience is the best way to learn about all the interdisciplinary aspects of robotics."
+
+<strong>Rodney Brooks</strong>
