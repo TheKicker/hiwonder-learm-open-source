@@ -224,7 +224,7 @@ input[type=range]::-moz-range-thumb {
 .servo-grid { display: flex; flex-direction: column; }
 .servo-row {
   display: grid;
-  grid-template-columns: 26px 110px 1fr 78px 52px;
+  grid-template-columns: 26px 110px 1fr 80px 52px;
   align-items: center; gap: 14px;
   padding: 14px 18px; border-bottom: 1px solid var(--bg3);
   transition: background 0.15s;
@@ -242,6 +242,36 @@ input[type=range]::-moz-range-thumb {
   padding: 4px 7px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
 }
 .servo-home-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+
+/* ─── Duty text input ────────────────────────────────────────────────────── */
+.duty-input {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--blue); font-family: var(--mono); font-size: 12px; font-weight: 500;
+  padding: 4px 6px; text-align: right; outline: none; width: 72px;
+  transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+.duty-input::-webkit-outer-spin-button,
+.duty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.duty-input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-dim); }
+.duty-input:hover { border-color: var(--text-faint); }
+
+/* ─── Accordion ──────────────────────────────────────────────────────────── */
+.accordion-header {
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.accordion-header:hover .panel-title { color: var(--text-dim); }
+.accordion-chevron {
+  font-size: 11px; color: var(--text-faint);
+  transition: transform 0.25s; flex-shrink: 0;
+}
+.accordion-open .accordion-chevron { transform: rotate(180deg); }
+.accordion-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.accordion-open .accordion-body { max-height: 1200px; }
 
 /* ─── Offset panel ───────────────────────────────────────────────────────── */
 .offset-row {
@@ -363,8 +393,15 @@ footer {
       </div>
       <div class="panel-body">
         <svg id="armVis" width="200" height="220" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="100" cy="210" rx="38" ry="7" fill="var(--bg3)" stroke="var(--border2)" stroke-width="1.5"/>
-          <rect x="86" y="197" width="28" height="16" rx="4" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1" opacity="0.6"/>
+          <!-- Base plate -->
+          <ellipse cx="100" cy="214" rx="52" ry="9" fill="var(--bg4)" stroke="var(--border2)" stroke-width="1.5"/>
+          <rect x="72" y="207" width="56" height="10" rx="2" fill="var(--bg4)" stroke="var(--border2)" stroke-width="1"/>
+          <!-- Rotation ring -->
+          <ellipse cx="100" cy="206" rx="28" ry="5" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>
+          <!-- Turret body -->
+          <rect x="88" y="194" width="24" height="14" rx="3" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2" opacity="0.7"/>
+          <!-- Center post -->
+          <rect x="96" y="188" width="8" height="8" rx="2" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2"/>
           <line id="seg1" x1="100" y1="197" x2="100" y2="160" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
           <circle id="j1" cx="100" cy="160" r="6" fill="var(--bg)" stroke="var(--blue)" stroke-width="2"/>
           <line id="seg2" x1="100" y1="160" x2="100" y2="118" stroke="var(--blue)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
@@ -389,29 +426,6 @@ footer {
         <button class="btn btn-ghost btn-full" id="readBtn">⊙ Sync Positions from Arm</button>
         <button class="btn btn-warn btn-full"  id="stopBtn">■ Stop All Motion</button>
         <button class="btn btn-blue btn-full"  id="sendAllBtn">→ Send All Servos Now</button>
-      </div>
-    </div>
-
-    <!-- Gripper Debug -->
-    <div class="panel" id="gripperDebugPanel">
-      <div class="panel-header">
-        <span class="panel-title">Gripper Diagnostics</span>
-        <button onclick="document.getElementById('gripperDebugPanel').style.display='none'"
-          style="font-family:var(--mono);font-size:9px;color:var(--border2);background:none;border:none;cursor:pointer">HIDE</button>
-      </div>
-      <div class="panel-body" style="display:flex;flex-direction:column;gap:7px">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);line-height:1.7">
-          Send raw byte sequences identical to desktop app. Watch console for arm response.
-        </div>
-        <button class="btn btn-ghost btn-full" id="dbgGripOpen">RAW: Gripper Open (all-6, S1=1500)</button>
-        <button class="btn btn-ghost btn-full" id="dbgGripClose">RAW: Gripper Close (all-6, S1=600)</button>
-        <button class="btn btn-ghost btn-full" id="dbgGripOnly">RAW: S1 only (single servo, S1=600)</button>
-        <button class="btn btn-ghost btn-full" id="dbgVersionQuery">RAW: Version Query</button>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin-top:4px">
-          If "all-6" moves gripper but slider doesn't → timing issue.<br>
-          If "S1 only" also fails → AND gate theory confirmed.<br>
-          If nothing moves gripper → S1 may be mapped differently on your board revision.
-        </div>
       </div>
     </div>
 
@@ -440,13 +454,13 @@ footer {
       </div>
     </div>
 
-    <!-- Console -->
+    <!-- Saved Poses — moved here from right col -->
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Console</span>
-        <button onclick="clearLog()" style="font-family:var(--mono);font-size:9px;color:var(--border2);background:none;border:none;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase">CLR</button>
+        <span class="panel-title">Saved Poses</span>
+        <button class="btn btn-ghost" id="savePoseBtn" style="padding:4px 10px;font-size:10px">+ Save Current</button>
       </div>
-      <div class="console-log" id="consoleLog"></div>
+      <div class="panel-body" id="presetsBody"></div>
     </div>
 
   </div>
@@ -470,26 +484,31 @@ footer {
       <div class="servo-grid" id="servoGrid"></div>
     </div>
 
-    <!-- Software Offsets (Zero calibration) -->
+    <!-- Software Offsets (Zero calibration) — accordion -->
     <div class="panel" id="offsetPanel">
-      <div class="panel-header">
+      <div class="panel-header accordion-header" onclick="toggleAccordion('offsetAccordion', this)">
         <span class="panel-title">Joint Calibration (Software Zero)</span>
-        <button class="btn btn-ok" id="saveOffsetsBtn" style="padding:4px 10px;font-size:10px">💾 Save to Flash</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-ok" id="saveOffsetsBtn" style="padding:4px 10px;font-size:10px" onclick="event.stopPropagation()">💾 Save to Flash</button>
+          <span class="accordion-chevron">▼</span>
+        </div>
       </div>
-      <div style="padding:10px 18px 6px;font-family:var(--mono);font-size:10px;color:var(--text-faint);line-height:1.7;border-bottom:1px solid var(--border)">
-        Jog each servo to where it should be "home", then click <span style="color:var(--blue)">Set Zero Here</span>. 
-        The offset is applied in software and saved to the arm's flash. Range: −125 to +125 µs.
+      <div class="accordion-body" id="offsetAccordion">
+        <div style="padding:10px 18px 6px;font-family:var(--mono);font-size:10px;color:var(--text-faint);line-height:1.7;border-bottom:1px solid var(--border)">
+          Jog each servo to where it should be "home", then click <span style="color:var(--blue)">Set Zero Here</span>.
+          The offset is applied in software and saved to the arm's flash. Range: −125 to +125 µs.
+        </div>
+        <div id="offsetGrid"></div>
       </div>
-      <div id="offsetGrid"></div>
     </div>
 
-    <!-- Saved Poses -->
+    <!-- Console — moved here from left col -->
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Saved Poses</span>
-        <button class="btn btn-ghost" id="savePoseBtn" style="padding:4px 10px;font-size:10px">+ Save Current</button>
+        <span class="panel-title">Console</span>
+        <button onclick="clearLog()" style="font-family:var(--mono);font-size:9px;color:var(--border2);background:none;border:none;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase">CLR</button>
       </div>
-      <div class="panel-body" id="presetsBody"></div>
+      <div class="console-log" id="consoleLog"></div>
     </div>
 
   </div>
@@ -514,12 +533,12 @@ footer {
 // ID 1 (gripper) further clamped to 500–1500 by firmware
 // ─────────────────────────────────────────────────────────────────────────────
 const SERVOS = [
-  { id: 1, name: 'Gripper',       min: 600, max: 1500, home: 1500, note: 'Open→1500  Closed→600' },
-  { id: 2, name: 'Wrist Roll',    min: 500, max: 2500, home: 1500, note: 'Left→500   Right→2500' },
-  { id: 3, name: 'Elbow Lower',   min: 500, max: 2500, home: 644,  note: '' },
-  { id: 4, name: 'Elbow Upper',   min: 500, max: 2500, home: 511,  note: '' },
-  { id: 5, name: 'Shoulder',      min: 500, max: 2500, home: 1255, note: '' },
-  { id: 6, name: 'Base Rotate',   min: 500, max: 2500, home: 770,  note: 'Left→500   Right→2500' },
+  { id: 1, name: 'Gripper',     min: 600,  max: 1500, home: 1500, note: 'Open→1500  Closed→600' },
+  { id: 2, name: 'Wrist Roll',  min: 500,  max: 2500, home: 1500, note: 'Left→500   Right→2500' },
+  { id: 3, name: 'Elbow Lower', min: 500,  max: 2500, home: 1500, note: '' },
+  { id: 4, name: 'Elbow Upper', min: 500,  max: 2500, home: 1500, note: '' },
+  { id: 5, name: 'Shoulder',    min: 500,  max: 2500, home: 1500, note: '' },
+  { id: 6, name: 'Base Rotate', min: 500,  max: 2500, home: 1500, note: 'Left→500   Right→2500' },
 ];
 
 // Runtime state
@@ -615,7 +634,10 @@ function buildServoGrid() {
           oninput="onSliderInput(${s.id}, this.value)"
           onchange="onSliderCommit(${s.id}, this.value)">
       </div>
-      <div class="servo-duty" id="duty_${s.id}">${servoState[s.id]} <small>µs</small></div>
+      <input type="number" class="duty-input" id="duty_${s.id}"
+        min="${s.min}" max="${s.max}" value="${servoState[s.id]}"
+        onchange="onDutyInputChange(${s.id}, this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()">
       <button class="servo-home-btn" onclick="servoHome(${s.id})">HOME</button>
     `;
     grid.appendChild(row);
@@ -623,44 +645,48 @@ function buildServoGrid() {
   });
 }
 
-// Always send all 6 servos in one packet.
-// The schematic shows S1 (gripper) is gated through an AND gate (SN74LVC1G08)
-// that the desktop app never bypasses — it always sends all 6 servos together.
-// Sending S1 alone appears to not trigger the gate. Match that behavior.
-function buildAllServos() {
-  return SERVOS.map(s => ({ id: s.id, duty: servoState[s.id] }));
-}
-
 // Fires on every pixel of drag — throttled to avoid flooding serial at 9600
 function onSliderInput(id, val) {
   val = parseInt(val);
   servoState[id] = val;
   updateSliderTrack(id, val);
-  document.getElementById('duty_' + id).innerHTML = val + ' <small>µs</small>';
+  document.getElementById('duty_' + id).value = val;
   updateVisualizer();
 
-  // Throttled live send — always all 6
   clearTimeout(throttleTimers[id]);
   throttleTimers[id] = setTimeout(() => {
     const dur = parseInt(document.getElementById('durationSlider').value);
-    socket.emit('arm:move_servos', { servos: buildAllServos(), duration: dur });
+    socket.emit('arm:move_servo', { id, duty: val, duration: dur });
   }, THROTTLE_MS);
 }
 
-// Fires on mouse-up — sends final value immediately (cancels any pending throttle)
+// Fires on mouse-up — sends final value immediately
 function onSliderCommit(id, val) {
   val = parseInt(val);
   clearTimeout(throttleTimers[id]);
   const dur = parseInt(document.getElementById('durationSlider').value);
-  socket.emit('arm:move_servos', { servos: buildAllServos(), duration: dur });
+  socket.emit('arm:move_servo', { id, duty: val, duration: dur });
   log('S' + id + ' (' + SERVOS.find(s=>s.id===id).name + ') → ' + val + ' µs (' + dur + 'ms)', 'info');
+}
+
+// Direct text input change — clamp, update slider, send
+function onDutyInputChange(id, val) {
+  const s = SERVOS.find(sv => sv.id === id);
+  val = Math.max(s.min, Math.min(s.max, parseInt(val) || s.home));
+  document.getElementById('duty_' + id).value = val;
+  servoState[id] = val;
+  updateSliderTrack(id, val);
+  updateVisualizer();
+  const dur = parseInt(document.getElementById('durationSlider').value);
+  socket.emit('arm:move_servo', { id, duty: val, duration: dur });
+  log('S' + id + ' (' + s.name + ') → ' + val + ' µs (typed)', 'info');
 }
 
 function updateSliderUI(id, duty) {
   const el = document.getElementById('slider_' + id);
   const du = document.getElementById('duty_' + id);
   if (el) el.value = duty;
-  if (du) du.innerHTML = duty + ' <small>µs</small>';
+  if (du) du.value = duty;
   updateSliderTrack(id, duty);
 }
 
@@ -943,6 +969,14 @@ function log(msg, level = 'info') {
 }
 function clearLog() { document.getElementById('consoleLog').innerHTML = ''; }
 
+// ─── Accordion ───────────────────────────────────────────────────────────────
+function toggleAccordion(bodyId, headerEl) {
+  const body = document.getElementById(bodyId);
+  const panel = headerEl.closest('.panel');
+  const isOpen = panel.classList.contains('accordion-open');
+  panel.classList.toggle('accordion-open', !isOpen);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 buildServoGrid();
 buildOffsetGrid();
@@ -950,39 +984,7 @@ renderPresets();
 updateVisualizer();
 // Init duration track
 document.getElementById('durationSlider').dispatchEvent(new Event('input'));
-// ─── Gripper diagnostics ─────────────────────────────────────────────────────
-// Pre-computed raw packets matching desktop app exactly (verified against firmware unpack sim)
-const RAW_GRIP_OPEN  = [0x55,0x55,0x17,0x03,0x06,0xE8,0x03,0x01,0xDC,0x05,0x02,0xDC,0x05,0x03,0xDC,0x05,0x04,0xDC,0x05,0x05,0xDC,0x05,0x06,0xDC,0x05]; // all-6, S1=1500
-const RAW_GRIP_CLOSE = [0x55,0x55,0x17,0x03,0x06,0xE8,0x03,0x01,0x58,0x02,0x02,0xDC,0x05,0x03,0xDC,0x05,0x04,0xDC,0x05,0x05,0xDC,0x05,0x06,0xDC,0x05]; // all-6, S1=600
-const RAW_S1_ONLY    = [0x55,0x55,0x08,0x03,0x01,0xE8,0x03,0x01,0x58,0x02]; // single S1=600
-const RAW_VERSION    = [0x55,0x55,0x02,0x01]; // version query
-
-document.getElementById('dbgGripOpen').addEventListener('click', () => {
-  socket.emit('arm:raw_send', { bytes: RAW_GRIP_OPEN });
-  log('DBG TX: ' + RAW_GRIP_OPEN.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
-  log('DBG: all-6 packet, S1=1500 (open) — did gripper open?', 'blue');
-});
-
-document.getElementById('dbgGripClose').addEventListener('click', () => {
-  socket.emit('arm:raw_send', { bytes: RAW_GRIP_CLOSE });
-  log('DBG TX: ' + RAW_GRIP_CLOSE.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
-  log('DBG: all-6 packet, S1=600 (close) — did gripper close?', 'blue');
-});
-
-document.getElementById('dbgGripOnly').addEventListener('click', () => {
-  socket.emit('arm:raw_send', { bytes: RAW_S1_ONLY });
-  log('DBG TX: ' + RAW_S1_ONLY.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
-  log('DBG: single-servo packet, S1=600 — did gripper close?', 'blue');
-});
-
-document.getElementById('dbgVersionQuery').addEventListener('click', () => {
-  socket.emit('arm:raw_send', { bytes: RAW_VERSION });
-  log('DBG TX: ' + RAW_VERSION.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
-  log('DBG: version query — watch for arm:version response', 'blue');
-});
-
-log('LeArm Controller ready · servo IDs corrected from firmware source', 'blue');
-log('S1=Gripper S2=Wrist S3=ElbowLower S4=ElbowUpper S5=Shoulder S6=Base', 'info');
+log('LeArm Controller ready', 'blue');
 </script>
 </body>
 </html>
