@@ -392,6 +392,29 @@ footer {
       </div>
     </div>
 
+    <!-- Gripper Debug -->
+    <div class="panel" id="gripperDebugPanel">
+      <div class="panel-header">
+        <span class="panel-title">Gripper Diagnostics</span>
+        <button onclick="document.getElementById('gripperDebugPanel').style.display='none'"
+          style="font-family:var(--mono);font-size:9px;color:var(--border2);background:none;border:none;cursor:pointer">HIDE</button>
+      </div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:7px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);line-height:1.7">
+          Send raw byte sequences identical to desktop app. Watch console for arm response.
+        </div>
+        <button class="btn btn-ghost btn-full" id="dbgGripOpen">RAW: Gripper Open (all-6, S1=1500)</button>
+        <button class="btn btn-ghost btn-full" id="dbgGripClose">RAW: Gripper Close (all-6, S1=600)</button>
+        <button class="btn btn-ghost btn-full" id="dbgGripOnly">RAW: S1 only (single servo, S1=600)</button>
+        <button class="btn btn-ghost btn-full" id="dbgVersionQuery">RAW: Version Query</button>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin-top:4px">
+          If "all-6" moves gripper but slider doesn't → timing issue.<br>
+          If "S1 only" also fails → AND gate theory confirmed.<br>
+          If nothing moves gripper → S1 may be mapped differently on your board revision.
+        </div>
+      </div>
+    </div>
+
     <!-- Serial Connection — set it and forget it -->
     <div class="panel">
       <div class="panel-header">
@@ -927,6 +950,37 @@ renderPresets();
 updateVisualizer();
 // Init duration track
 document.getElementById('durationSlider').dispatchEvent(new Event('input'));
+// ─── Gripper diagnostics ─────────────────────────────────────────────────────
+// Pre-computed raw packets matching desktop app exactly (verified against firmware unpack sim)
+const RAW_GRIP_OPEN  = [0x55,0x55,0x17,0x03,0x06,0xE8,0x03,0x01,0xDC,0x05,0x02,0xDC,0x05,0x03,0xDC,0x05,0x04,0xDC,0x05,0x05,0xDC,0x05,0x06,0xDC,0x05]; // all-6, S1=1500
+const RAW_GRIP_CLOSE = [0x55,0x55,0x17,0x03,0x06,0xE8,0x03,0x01,0x58,0x02,0x02,0xDC,0x05,0x03,0xDC,0x05,0x04,0xDC,0x05,0x05,0xDC,0x05,0x06,0xDC,0x05]; // all-6, S1=600
+const RAW_S1_ONLY    = [0x55,0x55,0x08,0x03,0x01,0xE8,0x03,0x01,0x58,0x02]; // single S1=600
+const RAW_VERSION    = [0x55,0x55,0x02,0x01]; // version query
+
+document.getElementById('dbgGripOpen').addEventListener('click', () => {
+  socket.emit('arm:raw_send', { bytes: RAW_GRIP_OPEN });
+  log('DBG TX: ' + RAW_GRIP_OPEN.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
+  log('DBG: all-6 packet, S1=1500 (open) — did gripper open?', 'blue');
+});
+
+document.getElementById('dbgGripClose').addEventListener('click', () => {
+  socket.emit('arm:raw_send', { bytes: RAW_GRIP_CLOSE });
+  log('DBG TX: ' + RAW_GRIP_CLOSE.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
+  log('DBG: all-6 packet, S1=600 (close) — did gripper close?', 'blue');
+});
+
+document.getElementById('dbgGripOnly').addEventListener('click', () => {
+  socket.emit('arm:raw_send', { bytes: RAW_S1_ONLY });
+  log('DBG TX: ' + RAW_S1_ONLY.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
+  log('DBG: single-servo packet, S1=600 — did gripper close?', 'blue');
+});
+
+document.getElementById('dbgVersionQuery').addEventListener('click', () => {
+  socket.emit('arm:raw_send', { bytes: RAW_VERSION });
+  log('DBG TX: ' + RAW_VERSION.map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '), 'blue');
+  log('DBG: version query — watch for arm:version response', 'blue');
+});
+
 log('LeArm Controller ready · servo IDs corrected from firmware source', 'blue');
 log('S1=Gripper S2=Wrist S3=ElbowLower S4=ElbowUpper S5=Shoulder S6=Base', 'info');
 </script>
