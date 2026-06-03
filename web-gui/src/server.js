@@ -1,48 +1,36 @@
 /**
  * LeArm Web Controller — Server
- * 
- * Run: node src/server.js [--port 3000] [--serial /dev/ttyUSB0]
- * 
- * The arm communicates at 9600 baud over USB serial.
- * Make sure the arm is in PC mode (press button once after power-on;
- * LED should blink slowly at 1s intervals).
+ *
+ * Serial: 9600 baud confirmed from firmware (Serial.begin(9600) in .ino)
+ *
+ * Arm must be in PC mode:
+ *   Power on → press button once → LED blinks 1s on/1s off = PC mode
  */
 
 const express = require('express');
-const http = require('http');
+const http    = require('http');
 const { Server } = require('socket.io');
-const path = require('path');
+const path    = require('path');
 
 const {
   CMD,
-  HOME_POSITIONS,
-  moveServos,
-  moveServo,
-  resetHome,
-  queryVersion,
-  readServos,
-  stopAction,
-  ResponseParser,
-  parseServosRead,
-  parseVersion,
+  moveServos, moveServo, resetHome, queryVersion, readServos, stopAction,
+  setOffset, saveOffset,
+  ResponseParser, parseServosRead, parseVersion,
 } = require('./protocol');
 
-// ─── Config (override via env or CLI) ────────────────────────────────────────
 const PORT        = parseInt(process.env.PORT || '3000', 10);
 const SERIAL_PATH = process.env.SERIAL_PATH || '/dev/ttyUSB0';
-const BAUD_RATE   = 9600;
+const BAUD_RATE   = 9600; // confirmed from firmware source Serial.begin(9600)
 
-// ─── App setup ────────────────────────────────────────────────────────────────
-const app = express();
+const app    = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: '*' }
-});
+const io     = new Server(server, { cors: { origin: '*' } });
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
-// ─── Serial port ─────────────────────────────────────────────────────────────
+// ─── Serial ───────────────────────────────────────────────────────────────────
 let port = null;
 let serialConnected = false;
 const parser = new ResponseParser();
@@ -50,18 +38,11 @@ const parser = new ResponseParser();
 async function connectSerial(serialPath = SERIAL_PATH) {
   try {
     const { SerialPort } = await import('serialport');
+    if (port && port.isOpen) await new Promise(res => port.close(res));
 
-    if (port && port.isOpen) {
-      await new Promise((res) => port.close(res));
-    }
+    port = new SerialPort({ path: serialPath, baudRate: BAUD_RATE, autoOpen: false });
 
-    port = new SerialPort({
-      path: serialPath,
-      baudRate: BAUD_RATE,
-      autoOpen: false,
-    });
-
-    port.open((err) => {
+    port.open(err => {
       if (err) {
         console.error(`[serial] Failed to open ${serialPath}:`, err.message);
         serialConnected = false;
@@ -69,21 +50,17 @@ async function connectSerial(serialPath = SERIAL_PATH) {
         return;
       }
       serialConnected = true;
-      console.log(`[serial] Connected to ${serialPath} @ ${BAUD_RATE} baud`);
+      console.log(`[serial] Connected → ${serialPath} @ ${BAUD_RATE} baud`);
       io.emit('serial:status', { connected: true, path: serialPath });
-
-      // After connecting, query firmware version
+      // Query version then read positions
       setTimeout(() => sendToArm(queryVersion()), 300);
     });
 
-    port.on('data', (chunk) => {
-      const packets = parser.feed(chunk);
-      for (const pkt of packets) {
-        handleArmResponse(pkt);
-      }
+    port.on('data', chunk => {
+      for (const pkt of parser.feed(chunk)) handleResponse(pkt);
     });
 
-    port.on('error', (err) => {
+    port.on('error', err => {
       console.error('[serial] Error:', err.message);
       serialConnected = false;
       io.emit('serial:status', { connected: false, error: err.message });
@@ -91,139 +68,102 @@ async function connectSerial(serialPath = SERIAL_PATH) {
 
     port.on('close', () => {
       serialConnected = false;
-      console.log('[serial] Port closed');
+      console.log('[serial] Closed');
       io.emit('serial:status', { connected: false, path: serialPath });
     });
-
   } catch (err) {
-    console.error('[serial] Import/init error:', err.message);
+    console.error('[serial] Import error:', err.message);
     io.emit('serial:status', { connected: false, error: err.message });
   }
 }
 
 function sendToArm(buf) {
-  if (!port || !port.isOpen) {
-    console.warn('[serial] Not connected — ignoring command');
-    return false;
-  }
-  port.write(buf, (err) => {
-    if (err) console.error('[serial] Write error:', err.message);
-  });
+  if (!port || !port.isOpen) { console.warn('[serial] Not connected'); return false; }
+  port.write(buf, err => { if (err) console.error('[serial] Write error:', err.message); });
   return true;
 }
 
 // ─── Response handler ─────────────────────────────────────────────────────────
-function handleArmResponse({ cmd, data }) {
+function handleResponse({ cmd, data }) {
   switch (cmd) {
-    case CMD.VERSION_QUERY: {
+    case CMD.VERSION_QUERY:
       const info = parseVersion(data);
-      console.log('[arm] Firmware version:', info);
+      console.log('[arm] FW:', info);
       io.emit('arm:version', info);
-      // After version, read current servo positions
-      setTimeout(() => sendToArm(readServos()), 100);
+      setTimeout(() => sendToArm(readServos()), 150);
       break;
-    }
-    case CMD.SERVOS_READ: {
-      const servos = parseServosRead(data);
-      io.emit('arm:positions', servos);
+    case CMD.SERVOS_READ:
+      io.emit('arm:positions', parseServosRead(data));
       break;
-    }
     default:
       io.emit('arm:raw', { cmd, data: Array.from(data) });
   }
 }
 
-// ─── REST: list available serial ports ───────────────────────────────────────
+// ─── REST ─────────────────────────────────────────────────────────────────────
 app.get('/api/ports', async (req, res) => {
   try {
     const { SerialPort } = await import('serialport');
-    const ports = await SerialPort.list();
-    res.json({ ports });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.json({ ports: await SerialPort.list() });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get('/api/status', (req, res) => {
+app.get('/api/status', (_req, res) => {
   res.json({ connected: serialConnected, path: SERIAL_PATH });
 });
 
-// ─── Socket.IO events ─────────────────────────────────────────────────────────
-io.on('connection', (socket) => {
-  console.log('[ws] Client connected:', socket.id);
-
-  // Send current state to new client
+// ─── Socket events ────────────────────────────────────────────────────────────
+io.on('connection', socket => {
+  console.log('[ws] Client:', socket.id);
   socket.emit('serial:status', { connected: serialConnected, path: SERIAL_PATH });
 
-  // ── Connect / disconnect serial ──────────────────────────────────────────
-  socket.on('serial:connect', ({ path: p }) => {
-    console.log('[ws] serial:connect →', p);
-    connectSerial(p || SERIAL_PATH);
-  });
+  socket.on('serial:connect',    ({ path: p }) => connectSerial(p || SERIAL_PATH));
+  socket.on('serial:disconnect', ()            => { if (port && port.isOpen) port.close(); });
 
-  socket.on('serial:disconnect', () => {
-    if (port && port.isOpen) port.close();
-  });
-
-  // ── Arm commands ─────────────────────────────────────────────────────────
-
-  /**
-   * Move one servo
-   * { id: 1-6, duty: 0-2500, duration: ms }
-   */
+  // Single servo — throttled calls arrive here
   socket.on('arm:move_servo', ({ id, duty, duration = 500 }) => {
     sendToArm(moveServo(id, duty, duration));
   });
 
-  /**
-   * Move multiple servos simultaneously
-   * { servos: [{id, duty}], duration: ms }
-   */
+  // Multi-servo simultaneous move
   socket.on('arm:move_servos', ({ servos, duration = 500 }) => {
     sendToArm(moveServos(servos, duration));
   });
 
-  /**
-   * Reset all servos to home
-   */
-  socket.on('arm:reset', () => {
-    sendToArm(resetHome());
+  // Reset all to home
+  socket.on('arm:reset', () => sendToArm(resetHome()));
+
+  // Stop motion
+  socket.on('arm:stop', () => sendToArm(stopAction()));
+
+  // Read positions from arm
+  socket.on('arm:read', () => sendToArm(readServos()));
+
+  // Set software offset for one servo (−125 to +125 µs)
+  socket.on('arm:set_offset', ({ id, offset }) => {
+    sendToArm(setOffset(id, offset));
   });
 
-  /**
-   * Stop any running action
-   */
-  socket.on('arm:stop', () => {
-    sendToArm(stopAction());
+  // Save all offsets to arm's flash
+  socket.on('arm:save_offsets', () => {
+    for (let id = 1; id <= 6; id++) {
+      sendToArm(saveOffset(id));
+    }
+    console.log('[arm] Offsets saved to flash');
   });
 
-  /**
-   * Read all servo positions
-   */
-  socket.on('arm:read', () => {
-    sendToArm(readServos());
-  });
+  // Raw bytes (debug)
+  socket.on('arm:raw_send', ({ bytes }) => sendToArm(Buffer.from(bytes)));
 
-  /**
-   * Raw packet send (for debugging)
-   * { bytes: [0x55, 0x55, ...] }
-   */
-  socket.on('arm:raw_send', ({ bytes }) => {
-    sendToArm(Buffer.from(bytes));
-  });
-
-  socket.on('disconnect', () => {
-    console.log('[ws] Client disconnected:', socket.id);
-  });
+  socket.on('disconnect', () => console.log('[ws] Disconnected:', socket.id));
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n╔══════════════════════════════════════╗`);
-  console.log(`║   LeArm Controller  →  :${PORT}          ║`);
-  console.log(`╚══════════════════════════════════════╝`);
+  console.log(`\n╔═══════════════════════════════════╗`);
+  console.log(`║  LeArm Controller  →  :${PORT}       ║`);
+  console.log(`╚═══════════════════════════════════╝`);
   console.log(`  Serial: ${SERIAL_PATH} @ ${BAUD_RATE} baud`);
-  console.log(`  Open browser: http://localhost:${PORT}\n`);
-  // Try to auto-connect on startup
+  console.log(`  Open:   http://localhost:${PORT}\n`);
   connectSerial(SERIAL_PATH);
 });

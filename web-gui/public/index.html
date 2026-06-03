@@ -11,700 +11,308 @@
 <style>
 /* ─── Design Tokens ──────────────────────────────────────────────────────── */
 :root {
-  --black:       #0A0A0B;
-  --black-2:     #111113;
-  --black-3:     #18181C;
-  --black-4:     #222228;
-  --black-5:     #2C2C34;
-  --bone:        #F0EDE6;
-  --bone-dim:    #C8C4BC;
-  --bone-faint:  #8A877F;
+  /* DARK MODE (default) */
+  --bg:          #0A0A0B;
+  --bg2:         #111113;
+  --bg3:         #18181C;
+  --bg4:         #222228;
+  --bg5:         #2C2C34;
+  --text:        #F0EDE6;
+  --text-dim:    #C8C4BC;
+  --text-faint:  #8A877F;
+  --border:      #222228;
+  --border2:     #2C2C34;
   --blue:        #27BCFE;
-  --blue-glow:   rgba(39, 188, 254, 0.18);
-  --blue-dim:    rgba(39, 188, 254, 0.08);
-  --blue-dark:   #1A8FBF;
+  --blue-glow:   rgba(39,188,254,0.18);
+  --blue-dim:    rgba(39,188,254,0.08);
   --danger:      #FF4C4C;
   --warn:        #FFA53A;
-  --success:     #3EE0A0;
+  --ok:          #3EE0A0;
+  --track-empty: #222228;
   --radius:      6px;
   --radius-lg:   12px;
   --mono:        'JetBrains Mono', monospace;
   --sans:        'Syne', sans-serif;
 }
 
-/* ─── Reset ──────────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:          #F4F2EE;
+  --bg2:         #FFFFFF;
+  --bg3:         #EAE8E3;
+  --bg4:         #DDD9D1;
+  --bg5:         #C8C4BB;
+  --text:        #1A1A1F;
+  --text-dim:    #3A3A44;
+  --text-faint:  #7A7870;
+  --border:      #DDD9D1;
+  --border2:     #C8C4BB;
+  --blue:        #0E8FC4;
+  --blue-glow:   rgba(14,143,196,0.15);
+  --blue-dim:    rgba(14,143,196,0.08);
+  --danger:      #CC2222;
+  --warn:        #C07010;
+  --ok:          #1A9460;
+  --track-empty: #DDD9D1;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 
 body {
-  background: var(--black);
-  color: var(--bone);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--sans);
   font-size: 14px;
   line-height: 1.5;
   overflow-x: hidden;
-  cursor: default;
+  transition: background 0.25s, color 0.25s;
 }
 
-/* Subtle grain overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-  opacity: 0.4;
-}
-
-/* Ambient blue glow top-right */
+/* Ambient glow - dark only */
 body::after {
   content: '';
   position: fixed;
-  top: -200px;
-  right: -200px;
-  width: 600px;
-  height: 600px;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(39,188,254,0.07) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(39,188,254,0.06) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
+  opacity: 1;
+  transition: opacity 0.3s;
 }
+[data-theme="light"] body::after { opacity: 0; }
 
-/* ─── Layout ──────────────────────────────────────────────────────────────── */
-.app {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  grid-template-areas: "header" "main" "footer";
-}
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.app { position: relative; z-index: 1; min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
 
-/* ─── Header ──────────────────────────────────────────────────────────────── */
+/* ─── Header ─────────────────────────────────────────────────────────────── */
 header {
-  grid-area: header;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 32px;
-  border-bottom: 1px solid var(--black-4);
-  background: rgba(10,10,11,0.85);
-  backdrop-filter: blur(12px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  position: sticky; top: 0; z-index: 100;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-title { font-size: 15px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.1; }
+.logo-sub { font-family: var(--mono); font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-transform: uppercase; }
+
+.header-right { display: flex; align-items: center; gap: 14px; }
+
+/* Theme toggle */
+.theme-toggle {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; transition: all 0.2s;
 }
+.theme-toggle:hover { border-color: var(--blue); }
 
-.logo-mark {
-  width: 34px;
-  height: 34px;
-  position: relative;
-}
-
-.logo-mark svg { width: 100%; height: 100%; }
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.logo-title {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--bone);
-  line-height: 1.1;
-}
-
-.logo-sub {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--bone-faint);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Connection status pill */
-.status-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 100px;
-  border: 1px solid var(--black-5);
-  background: var(--black-2);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  transition: all 0.3s;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--black-5);
-  transition: all 0.3s;
-  flex-shrink: 0;
-}
-
-.status-pill.connected .status-dot {
-  background: var(--success);
-  box-shadow: 0 0 8px var(--success);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-.status-pill.connected {
-  border-color: rgba(62, 224, 160, 0.2);
-  color: var(--success);
-}
-
-.status-pill.error .status-dot {
-  background: var(--danger);
-  box-shadow: 0 0 8px var(--danger);
-}
-.status-pill.error { border-color: rgba(255,76,76,0.2); color: var(--danger); }
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* Firmware badge */
 .fw-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--bone-faint);
-  padding: 4px 10px;
-  border: 1px solid var(--black-4);
-  border-radius: 4px;
-  letter-spacing: 0.06em;
-  display: none;
+  font-family: var(--mono); font-size: 10px; color: var(--text-faint);
+  padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px;
+  letter-spacing: 0.06em; display: none;
 }
 .fw-badge.visible { display: block; }
 
-/* ─── Main ────────────────────────────────────────────────────────────────── */
-main {
-  grid-area: main;
-  padding: 28px 32px;
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 20px;
-  align-items: start;
+.status-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--border2); background: var(--bg3);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  transition: all 0.3s;
 }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); transition: all 0.3s; flex-shrink: 0; }
+.status-pill.connected .status-dot { background: var(--ok); box-shadow: 0 0 8px var(--ok); animation: pulseDot 2s ease-in-out infinite; }
+.status-pill.connected { border-color: rgba(62,224,160,0.25); color: var(--ok); }
+.status-pill.error .status-dot { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.status-pill.error { border-color: rgba(255,76,76,0.25); color: var(--danger); }
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ─── Panel base ─────────────────────────────────────────────────────────── */
-.panel {
-  background: var(--black-2);
-  border: 1px solid var(--black-4);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
+/* ─── Main ───────────────────────────────────────────────────────────────── */
+main { padding: 24px 28px; display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start; }
 
-.panel-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--black-4);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+/* ─── Panel ──────────────────────────────────────────────────────────────── */
+.panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.panel-header { padding: 13px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-faint); }
+.panel-body { padding: 18px; }
 
-.panel-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--bone-faint);
-}
+/* ─── Columns ────────────────────────────────────────────────────────────── */
+.left-col { display: flex; flex-direction: column; gap: 14px; }
+.right-col { display: flex; flex-direction: column; gap: 14px; }
 
-.panel-body { padding: 20px; }
-
-/* ─── Left column ────────────────────────────────────────────────────────── */
-.left-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Connection panel */
-.connect-panel .panel-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.field-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--bone-faint);
-}
-
+/* ─── Form fields ────────────────────────────────────────────────────────── */
+.field-row { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
 .field-input {
-  background: var(--black-3);
-  border: 1px solid var(--black-5);
-  border-radius: var(--radius);
-  color: var(--bone);
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 8px 12px;
-  outline: none;
-  width: 100%;
-  transition: border-color 0.2s;
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius);
+  color: var(--text); font-family: var(--mono); font-size: 12px; padding: 8px 11px;
+  outline: none; width: 100%; transition: border-color 0.2s;
 }
-
 .field-input:focus { border-color: var(--blue); }
+.field-input option { background: var(--bg3); }
 
-.field-input option {
-  background: var(--black-3);
-}
-
-.btn-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-/* Buttons */
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 9px 16px;
-  border-radius: var(--radius);
-  border: 1px solid transparent;
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  text-transform: uppercase;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 15px; border-radius: var(--radius); border: 1px solid transparent;
+  font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap; text-transform: uppercase;
 }
-
 .btn:active { transform: scale(0.97); }
 
-.btn-blue {
-  background: var(--blue);
-  color: var(--black);
-  border-color: var(--blue);
-}
-.btn-blue:hover { background: #45C9FF; border-color: #45C9FF; box-shadow: 0 0 20px var(--blue-glow); }
+.btn-blue { background: var(--blue); color: var(--bg); border-color: var(--blue); }
+.btn-blue:hover { filter: brightness(1.1); box-shadow: 0 0 18px var(--blue-glow); }
 .btn-blue:disabled { opacity: 0.35; cursor: not-allowed; }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--bone-dim);
-  border-color: var(--black-5);
-}
-.btn-ghost:hover { border-color: var(--bone-faint); color: var(--bone); }
+.btn-ghost { background: transparent; color: var(--text-dim); border-color: var(--border2); }
+.btn-ghost:hover { border-color: var(--text-faint); color: var(--text); background: var(--bg3); }
 
-.btn-danger {
-  background: transparent;
-  color: var(--danger);
-  border-color: rgba(255,76,76,0.3);
-}
-.btn-danger:hover { background: rgba(255,76,76,0.1); border-color: var(--danger); }
+.btn-danger { background: transparent; color: var(--danger); border-color: rgba(255,76,76,0.3); }
+.btn-danger:hover { background: rgba(255,76,76,0.08); border-color: var(--danger); }
 
-.btn-warn {
-  background: transparent;
-  color: var(--warn);
-  border-color: rgba(255,165,58,0.3);
-}
-.btn-warn:hover { background: rgba(255,165,58,0.1); border-color: var(--warn); }
+.btn-warn { background: transparent; color: var(--warn); border-color: rgba(255,165,58,0.3); }
+.btn-warn:hover { background: rgba(255,165,58,0.08); border-color: var(--warn); }
+
+.btn-ok { background: transparent; color: var(--ok); border-color: rgba(62,224,160,0.3); }
+.btn-ok:hover { background: rgba(62,224,160,0.08); border-color: var(--ok); }
 
 .btn-full { width: 100%; }
+.btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
 
-.btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-/* Quick actions panel */
-.quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* ─── Quick actions ──────────────────────────────────────────────────────── */
+.quick-actions { display: flex; flex-direction: column; gap: 7px; }
+
+/* ─── Duration ───────────────────────────────────────────────────────────── */
+.duration-control {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 12px 18px;
+}
+.duration-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); white-space: nowrap; }
+.duration-value { font-family: var(--mono); font-size: 13px; color: var(--blue); min-width: 52px; text-align: right; }
+
+/* ─── Range slider ───────────────────────────────────────────────────────── */
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 3px;
+  background: var(--track-empty); border-radius: 2px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: var(--blue); cursor: pointer;
+  box-shadow: 0 0 0 3px var(--bg2), 0 0 0 4.5px var(--blue);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+input[type=range]:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--bg2), 0 0 0 5px var(--blue), 0 0 14px var(--blue-glow);
+  transform: scale(1.12);
+}
+input[type=range]::-moz-range-thumb {
+  width: 17px; height: 17px; border-radius: 50%;
+  background: var(--blue); border: 3px solid var(--bg2);
 }
 
-/* Arm visualizer */
-.arm-vis-panel .panel-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.arm-svg-wrap {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.arm-svg-wrap svg {
-  width: 200px;
-  height: 240px;
-}
-
-/* Console */
-.console-panel .panel-body {
-  padding: 0;
-}
-
-.console-log {
-  height: 140px;
-  overflow-y: auto;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
-  font-family: var(--mono);
-  font-size: 11px;
-  line-height: 1.6;
-}
-
-.console-log::-webkit-scrollbar { width: 4px; }
-.console-log::-webkit-scrollbar-track { background: transparent; }
-.console-log::-webkit-scrollbar-thumb { background: var(--black-5); border-radius: 2px; }
-
-.log-entry {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  opacity: 0;
-  animation: fadein 0.2s forwards;
-}
-
-@keyframes fadein { to { opacity: 1; } }
-
-.log-time { color: var(--black-5); flex-shrink: 0; }
-.log-msg { color: var(--bone-dim); word-break: break-all; }
-.log-entry.info .log-msg  { color: var(--bone-dim); }
-.log-entry.ok .log-msg    { color: var(--success); }
-.log-entry.warn .log-msg  { color: var(--warn); }
-.log-entry.err .log-msg   { color: var(--danger); }
-.log-entry.blue .log-msg  { color: var(--blue); }
-
-/* ─── Right column — Servo sliders ──────────────────────────────────────── */
-.right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.servos-panel .panel-body {
-  padding: 0;
-}
-
-.servo-grid {
-  display: flex;
-  flex-direction: column;
-}
-
+/* ─── Servo grid ─────────────────────────────────────────────────────────── */
+.servo-grid { display: flex; flex-direction: column; }
 .servo-row {
   display: grid;
-  grid-template-columns: 28px 100px 1fr 80px 56px;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--black-3);
+  grid-template-columns: 26px 110px 1fr 78px 52px;
+  align-items: center; gap: 14px;
+  padding: 14px 18px; border-bottom: 1px solid var(--bg3);
   transition: background 0.15s;
 }
 .servo-row:last-child { border-bottom: none; }
-.servo-row:hover { background: var(--black-3); }
+.servo-row:hover { background: var(--bg3); }
 
-.servo-id {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--blue);
-  font-weight: 500;
-  letter-spacing: 0.05em;
-}
-
-.servo-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--bone);
-  letter-spacing: 0.04em;
-}
-
-/* Custom range slider */
-.servo-slider-wrap {
-  position: relative;
-  height: 28px;
-  display: flex;
-  align-items: center;
-}
-
-input[type=range] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 3px;
-  background: var(--black-4);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-  position: relative;
-}
-
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--blue);
-  cursor: pointer;
-  box-shadow: 0 0 0 3px var(--black-2), 0 0 0 4px var(--blue);
-  transition: box-shadow 0.15s, transform 0.15s;
-}
-
-input[type=range]:hover::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px var(--black-2), 0 0 0 5px var(--blue), 0 0 16px var(--blue-glow);
-  transform: scale(1.15);
-}
-
-input[type=range]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--blue);
-  cursor: pointer;
-  border: 3px solid var(--black-2);
-  box-shadow: 0 0 8px var(--blue-glow);
-}
-
-/* Track fill via linear-gradient updated in JS */
-.servo-duty-display {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--bone);
-  text-align: right;
-  min-width: 60px;
-}
-
-.servo-duty-display span {
-  color: var(--bone-faint);
-  font-size: 10px;
-}
-
+.servo-id { font-family: var(--mono); font-size: 11px; color: var(--blue); font-weight: 500; }
+.servo-name { font-size: 12px; font-weight: 600; }
+.servo-duty { font-family: var(--mono); font-size: 11px; text-align: right; }
+.servo-duty small { color: var(--text-faint); font-size: 9px; }
 .servo-home-btn {
-  background: transparent;
-  border: 1px solid var(--black-5);
-  border-radius: 4px;
-  color: var(--bone-faint);
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  letter-spacing: 0.05em;
+  background: transparent; border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--text-faint); font-family: var(--mono); font-size: 9px;
+  padding: 4px 7px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
 }
-.servo-home-btn:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: var(--blue-dim);
-}
+.servo-home-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
 
-/* Servo panel controls bar */
-.servos-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* ─── Offset panel ───────────────────────────────────────────────────────── */
+.offset-row {
+  display: grid;
+  grid-template-columns: 26px 110px 1fr 58px auto;
+  align-items: center; gap: 10px;
+  padding: 11px 18px; border-bottom: 1px solid var(--bg3);
 }
-
-/* Duration control */
-.duration-control {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--black-3);
-  border: 1px solid var(--black-4);
-  border-radius: var(--radius-lg);
-  padding: 14px 20px;
+.offset-row:last-child { border-bottom: none; }
+.offset-input {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  padding: 5px 8px; text-align: center; outline: none; width: 100%;
+  transition: border-color 0.2s;
 }
+.offset-input:focus { border-color: var(--blue); }
+.offset-display { font-family: var(--mono); font-size: 12px; color: var(--blue); text-align: right; }
 
-.duration-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--bone-faint);
-  white-space: nowrap;
+/* ─── Arm visualizer ─────────────────────────────────────────────────────── */
+.arm-vis-panel .panel-body { padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+/* ─── Pose readout grid ──────────────────────────────────────────────────── */
+.pos-readout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+.pos-cell { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; text-align: center; }
+.pos-label { font-family: var(--mono); font-size: 9px; color: var(--text-faint); letter-spacing: 0.1em; }
+.pos-value { font-family: var(--mono); font-size: 12px; color: var(--blue); font-weight: 500; }
+
+/* ─── Console ────────────────────────────────────────────────────────────── */
+.console-log {
+  height: 130px; overflow-y: auto; padding: 11px 15px;
+  display: flex; flex-direction: column-reverse; gap: 2px;
+  font-family: var(--mono); font-size: 11px; line-height: 1.6;
 }
+.console-log::-webkit-scrollbar { width: 4px; }
+.console-log::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.log-entry { display: flex; gap: 10px; align-items: baseline; opacity: 0; animation: fadein 0.2s forwards; }
+@keyframes fadein { to { opacity: 1; } }
+.log-time { color: var(--border2); flex-shrink: 0; }
+.log-msg { color: var(--text-faint); word-break: break-all; }
+.log-entry.ok  .log-msg  { color: var(--ok); }
+.log-entry.warn .log-msg { color: var(--warn); }
+.log-entry.err .log-msg  { color: var(--danger); }
+.log-entry.blue .log-msg { color: var(--blue); }
 
-.duration-value {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--blue);
-  min-width: 50px;
-  text-align: right;
-}
-
-/* Presets panel */
-.presets-panel .panel-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+/* ─── Presets ────────────────────────────────────────────────────────────── */
+.preset-item { display: flex; align-items: center; gap: 8px; }
 .preset-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 11px 14px;
-  background: var(--black-3);
-  border: 1px solid var(--black-4);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.15s;
-  gap: 8px;
+  display: flex; align-items: center; justify-content: space-between; flex: 1;
+  padding: 10px 13px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer; transition: all 0.15s; gap: 8px;
 }
-.preset-btn:hover {
-  border-color: var(--blue);
-  background: var(--blue-dim);
-}
+.preset-btn:hover { border-color: var(--blue); background: var(--blue-dim); }
+.preset-name { font-size: 12px; font-weight: 600; }
+.preset-desc { font-family: var(--mono); font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+.preset-del { background: none; border: none; color: var(--border2); cursor: pointer; padding: 6px; font-size: 18px; line-height: 1; transition: color 0.15s; }
+.preset-del:hover { color: var(--danger); }
+.presets-empty { font-family: var(--mono); font-size: 11px; color: var(--border2); text-align: center; padding: 12px 0; }
 
-.preset-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--bone);
-  letter-spacing: 0.03em;
-}
-
-.preset-desc {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--bone-faint);
-}
-
-.preset-icon {
-  color: var(--blue);
-  opacity: 0.6;
-}
-
-/* ─── Footer ──────────────────────────────────────────────────────────────── */
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
 footer {
-  grid-area: footer;
-  padding: 12px 32px;
-  border-top: 1px solid var(--black-3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--black-2);
+  padding: 11px 28px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg2); font-family: var(--mono); font-size: 10px; color: var(--border2); letter-spacing: 0.07em;
 }
 
-.footer-left {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--black-5);
-  letter-spacing: 0.08em;
-}
-
-.footer-right {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--black-5);
-  letter-spacing: 0.04em;
-}
-
-/* ─── Send-all flash animation ───────────────────────────────────────────── */
-@keyframes flashBlue {
-  0% { box-shadow: 0 0 0 0 var(--blue-glow); }
-  50% { box-shadow: 0 0 30px 6px var(--blue-glow); }
-  100% { box-shadow: 0 0 0 0 var(--blue-glow); }
-}
+/* ─── Flash animation ────────────────────────────────────────────────────── */
+@keyframes flashBlue { 0%{box-shadow:0 0 0 0 var(--blue-glow)} 50%{box-shadow:0 0 30px 6px var(--blue-glow)} 100%{box-shadow:0 0 0 0 var(--blue-glow)} }
 .flash-send { animation: flashBlue 0.4s ease-out; }
 
-/* ─── Modal overlay (connection helper) ─────────────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-.modal-overlay.open { opacity: 1; pointer-events: all; }
-
-.modal {
-  background: var(--black-2);
-  border: 1px solid var(--black-5);
-  border-radius: var(--radius-lg);
-  padding: 28px;
-  width: 380px;
-  max-width: 90vw;
-  transform: translateY(10px);
-  transition: transform 0.2s;
-}
-.modal-overlay.open .modal { transform: translateY(0); }
-
-.modal-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--bone);
-  margin-bottom: 8px;
-  letter-spacing: 0.04em;
-}
-
-.modal-body {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--bone-faint);
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
-
-.modal-body code {
-  color: var(--blue);
-  background: var(--black-3);
-  padding: 1px 5px;
-  border-radius: 3px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-/* ─── Scroll customization ───────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--black); }
-::-webkit-scrollbar-thumb { background: var(--black-4); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--black-5); }
-
-/* ─── Responsive tweak ───────────────────────────────────────────────────── */
-@media (max-width: 900px) {
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
   main { grid-template-columns: 1fr; }
   .left-col { order: 2; }
   .right-col { order: 1; }
@@ -712,27 +320,21 @@ footer {
 </style>
 </head>
 <body>
-
 <div class="app">
 
 <!-- ═══ HEADER ═══════════════════════════════════════════════════════════════ -->
 <header>
   <div class="logo">
-    <div class="logo-mark">
-      <!-- Stylized arm icon -->
-      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="1" width="32" height="32" rx="7" fill="#18181C" stroke="#27BCFE" stroke-width="1.2"/>
-        <!-- arm segments -->
-        <circle cx="17" cy="28" r="3" fill="#27BCFE" opacity="0.9"/>
-        <line x1="17" y1="25" x2="17" y2="18" stroke="#27BCFE" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="17" y1="18" x2="11" y2="11" stroke="#27BCFE" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-        <line x1="17" y1="18" x2="23" y2="12" stroke="#C8C4BC" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-        <circle cx="17" cy="18" r="2.5" fill="#111113" stroke="#27BCFE" stroke-width="1.5"/>
-        <circle cx="11" cy="11" r="2" fill="#27BCFE" opacity="0.7"/>
-        <circle cx="23" cy="12" r="1.5" fill="#C8C4BC" opacity="0.4"/>
-      </svg>
-    </div>
-    <div class="logo-text">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+      <rect x="1" y="1" width="32" height="32" rx="7" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2"/>
+      <circle cx="17" cy="28" r="3" fill="var(--blue)" opacity="0.9"/>
+      <line x1="17" y1="25" x2="17" y2="18" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="17" y1="18" x2="11" y2="11" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+      <line x1="17" y1="18" x2="23" y2="12" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      <circle cx="17" cy="18" r="2.5" fill="var(--bg)" stroke="var(--blue)" stroke-width="1.5"/>
+      <circle cx="11" cy="11" r="2" fill="var(--blue)" opacity="0.7"/>
+    </svg>
+    <div>
       <div class="logo-title">LeArm Controller</div>
       <div class="logo-sub">Hiwonder xArm1S · 6-DOF</div>
     </div>
@@ -743,24 +345,60 @@ footer {
       <div class="status-dot"></div>
       <span id="statusText">DISCONNECTED</span>
     </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
   </div>
 </header>
 
 <!-- ═══ MAIN ══════════════════════════════════════════════════════════════════ -->
 <main>
 
-  <!-- LEFT COLUMN -->
+  <!-- ── LEFT COLUMN ─────────────────────────────────────────────────────── -->
   <div class="left-col">
 
-    <!-- Connection Panel -->
-    <div class="panel connect-panel">
+    <!-- Live Pose Visualizer — top priority, used constantly -->
+    <div class="panel arm-vis-panel">
       <div class="panel-header">
-        <span class="panel-title">Serial Connection</span>
-        <button class="btn btn-ghost" id="refreshPortsBtn" style="padding:4px 10px;font-size:11px;">
-          ↻ Scan
-        </button>
+        <span class="panel-title">Live Pose</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--border2)">µs PULSEWIDTH</span>
       </div>
       <div class="panel-body">
+        <svg id="armVis" width="200" height="220" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="100" cy="210" rx="38" ry="7" fill="var(--bg3)" stroke="var(--border2)" stroke-width="1.5"/>
+          <rect x="86" y="197" width="28" height="16" rx="4" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1" opacity="0.6"/>
+          <line id="seg1" x1="100" y1="197" x2="100" y2="160" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
+          <circle id="j1" cx="100" cy="160" r="6" fill="var(--bg)" stroke="var(--blue)" stroke-width="2"/>
+          <line id="seg2" x1="100" y1="160" x2="100" y2="118" stroke="var(--blue)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+          <circle id="j2" cx="100" cy="118" r="5" fill="var(--bg)" stroke="var(--blue)" stroke-width="2" opacity="0.8"/>
+          <line id="seg3" x1="100" y1="118" x2="100" y2="84" stroke="var(--text-dim)" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+          <circle id="j3" cx="100" cy="84" r="4" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.6"/>
+          <line id="seg4" x1="100" y1="84" x2="115" y2="62" stroke="var(--text-dim)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <circle id="j4" cx="115" cy="62" r="3.5" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.5"/>
+          <line id="seg5" x1="115" y1="62" x2="128" y2="46" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <line id="grip1" x1="128" y1="46" x2="122" y2="36" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <line id="grip2" x1="128" y1="46" x2="135" y2="36" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+        <div class="pos-readout" id="posReadout"></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Quick Actions</span></div>
+      <div class="panel-body quick-actions">
+        <button class="btn btn-ghost btn-full" id="resetBtn">↺ Reset to Home Position</button>
+        <button class="btn btn-ghost btn-full" id="readBtn">⊙ Sync Positions from Arm</button>
+        <button class="btn btn-warn btn-full"  id="stopBtn">■ Stop All Motion</button>
+        <button class="btn btn-blue btn-full"  id="sendAllBtn">→ Send All Servos Now</button>
+      </div>
+    </div>
+
+    <!-- Serial Connection — set it and forget it -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Serial Connection</span>
+        <button class="btn btn-ghost" id="refreshPortsBtn" style="padding:4px 9px;font-size:10px">↻ Scan</button>
+      </div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:11px">
         <div class="field-row">
           <label class="field-label">Serial Port</label>
           <select class="field-input" id="portSelect">
@@ -770,92 +408,27 @@ footer {
           </select>
         </div>
         <div class="btn-row">
-          <button class="btn btn-blue" id="connectBtn">
-            <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Connect
-          </button>
-          <button class="btn btn-ghost" id="disconnectBtn">
-            <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Disconnect
-          </button>
+          <button class="btn btn-blue" id="connectBtn">+ Connect</button>
+          <button class="btn btn-ghost" id="disconnectBtn">× Disconnect</button>
         </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--black-5);line-height:1.6;padding-top:4px;">
-          Arm must be in <span style="color:var(--blue)">PC mode</span> — press button once after power-on.
-          LED blinks slowly (1s) to confirm.
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Quick Actions</span>
-      </div>
-      <div class="panel-body quick-actions">
-        <button class="btn btn-ghost btn-full" id="resetBtn">
-          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 1 1 8 3M8 1v4l3-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Reset to Home Position
-        </button>
-        <button class="btn btn-ghost btn-full" id="readBtn">
-          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Sync Positions from Arm
-        </button>
-        <button class="btn btn-warn btn-full" id="stopBtn">
-          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
-          Stop All Motion
-        </button>
-        <button class="btn btn-ghost btn-full" id="sendAllBtn">
-          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M2 8l10 0M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Send All Servos Now
-        </button>
-      </div>
-    </div>
-
-    <!-- Arm Visualizer -->
-    <div class="panel arm-vis-panel">
-      <div class="panel-header">
-        <span class="panel-title">Live Pose</span>
-        <span style="font-family:var(--mono);font-size:10px;color:var(--black-5)">DUTY UNITS</span>
-      </div>
-      <div class="panel-body">
-        <div class="arm-svg-wrap">
-          <svg id="armVis" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Base -->
-            <ellipse cx="100" cy="220" rx="40" ry="8" fill="#18181C" stroke="#2C2C34" stroke-width="1.5"/>
-            <rect x="85" y="205" width="30" height="18" rx="4" fill="#18181C" stroke="#27BCFE" stroke-width="1" opacity="0.6"/>
-            <!-- Segments will be updated dynamically by JS -->
-            <line id="seg1" x1="100" y1="205" x2="100" y2="165" stroke="#27BCFE" stroke-width="4" stroke-linecap="round"/>
-            <circle id="joint1" cx="100" cy="165" r="6" fill="#111113" stroke="#27BCFE" stroke-width="2"/>
-            <line id="seg2" x1="100" y1="165" x2="100" y2="120" stroke="#27BCFE" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
-            <circle id="joint2" cx="100" cy="120" r="5" fill="#111113" stroke="#27BCFE" stroke-width="2" opacity="0.8"/>
-            <line id="seg3" x1="100" y1="120" x2="100" y2="85" stroke="#C8C4BC" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-            <circle id="joint3" cx="100" cy="85" r="4" fill="#111113" stroke="#C8C4BC" stroke-width="1.5" opacity="0.6"/>
-            <line id="seg4" x1="100" y1="85" x2="115" y2="62" stroke="#C8C4BC" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-            <circle id="joint4" cx="115" cy="62" r="3.5" fill="#111113" stroke="#C8C4BC" stroke-width="1.5" opacity="0.5"/>
-            <line id="seg5" x1="115" y1="62" x2="128" y2="45" stroke="#8A877F" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <!-- Gripper -->
-            <line id="grip1" x1="128" y1="45" x2="122" y2="35" stroke="#8A877F" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line id="grip2" x1="128" y1="45" x2="135" y2="35" stroke="#8A877F" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-          </svg>
-        </div>
-        <div id="posReadout" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%">
-          <!-- filled by JS -->
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);line-height:1.7">
+          Press button once after power-on → LED blinks slowly = <span style="color:var(--blue)">PC mode</span>
         </div>
       </div>
     </div>
 
     <!-- Console -->
-    <div class="panel console-panel">
+    <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Console</span>
-        <button onclick="clearLog()" style="font-family:var(--mono);font-size:10px;color:var(--black-5);background:none;border:none;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;">CLR</button>
+        <button onclick="clearLog()" style="font-family:var(--mono);font-size:9px;color:var(--border2);background:none;border:none;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase">CLR</button>
       </div>
       <div class="console-log" id="consoleLog"></div>
     </div>
 
   </div>
 
-  <!-- RIGHT COLUMN -->
+  <!-- ── RIGHT COLUMN ────────────────────────────────────────────────────── -->
   <div class="right-col">
 
     <!-- Duration -->
@@ -866,58 +439,91 @@ footer {
     </div>
 
     <!-- Servo Sliders -->
-    <div class="panel servos-panel">
+    <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Servo Control</span>
-        <div class="servos-controls">
-          <span style="font-family:var(--mono);font-size:10px;color:var(--black-5)">DUTY 0 – 2500</span>
-        </div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--border2)">500 – 2500 µs</span>
       </div>
-      <div class="servo-grid" id="servoGrid">
-        <!-- Injected by JS -->
-      </div>
+      <div class="servo-grid" id="servoGrid"></div>
     </div>
 
-    <!-- Presets -->
-    <div class="panel presets-panel">
+    <!-- Software Offsets (Zero calibration) -->
+    <div class="panel" id="offsetPanel">
+      <div class="panel-header">
+        <span class="panel-title">Joint Calibration (Software Zero)</span>
+        <button class="btn btn-ok" id="saveOffsetsBtn" style="padding:4px 10px;font-size:10px">💾 Save to Flash</button>
+      </div>
+      <div style="padding:10px 18px 6px;font-family:var(--mono);font-size:10px;color:var(--text-faint);line-height:1.7;border-bottom:1px solid var(--border)">
+        Jog each servo to where it should be "home", then click <span style="color:var(--blue)">Set Zero Here</span>. 
+        The offset is applied in software and saved to the arm's flash. Range: −125 to +125 µs.
+      </div>
+      <div id="offsetGrid"></div>
+    </div>
+
+    <!-- Saved Poses -->
+    <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Saved Poses</span>
-        <button class="btn btn-ghost" id="savePoseBtn" style="padding:4px 10px;font-size:11px;">+ Save Current</button>
+        <button class="btn btn-ghost" id="savePoseBtn" style="padding:4px 10px;font-size:10px">+ Save Current</button>
       </div>
-      <div class="panel-body" id="presetsBody">
-        <!-- Filled by JS -->
-      </div>
+      <div class="panel-body" id="presetsBody"></div>
     </div>
 
   </div>
 </main>
 
-<!-- ═══ FOOTER ════════════════════════════════════════════════════════════════ -->
 <footer>
-  <div class="footer-left">LEARM CONTROLLER · HIWONDER XARM1S · 6DOF · 9600 BAUD</div>
-  <div class="footer-right" id="footerInfo">socket: —</div>
+  <span>LEARM · HIWONDER XARM1S · 6-DOF · 9600 BAUD · PWM 500–2500µs</span>
+  <span id="footerInfo">socket: —</span>
 </footer>
 
 </div><!-- .app -->
 
-<!-- ═══ JAVASCRIPT ════════════════════════════════════════════════════════════ -->
 <script>
-// ─── Servo config ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SERVO CONFIG
+// Correct physical mapping confirmed from firmware source:
+//   pwm_servos array: index 0 = SERVO_6 pin ... index 5 = SERVO_1 pin
+//   knot_run calls: pwmservo_obj.set_duty(6-id, ...)
+//   So servo ID 1 → gripper (claw), ID 6 → base rotate
+//
+// Duty range: 500–2500 µs (clamped by firmware; 0 causes jerky init jump)
+// ID 1 (gripper) further clamped to 500–1500 by firmware
+// ─────────────────────────────────────────────────────────────────────────────
 const SERVOS = [
-  { id: 1, name: 'Base Rotate',   min: 0,   max: 2500, home: 770,  color: '#27BCFE' },
-  { id: 2, name: 'Shoulder',      min: 0,   max: 2500, home: 1500, color: '#27BCFE' },
-  { id: 3, name: 'Elbow Upper',   min: 0,   max: 2500, home: 644,  color: '#70D4FF' },
-  { id: 4, name: 'Elbow Lower',   min: 0,   max: 2500, home: 511,  color: '#70D4FF' },
-  { id: 5, name: 'Wrist',         min: 0,   max: 2500, home: 1255, color: '#C8C4BC' },
-  { id: 6, name: 'Gripper',       min: 0,   max: 2500, home: 1500, color: '#C8C4BC' },
+  { id: 1, name: 'Gripper',       min: 500, max: 1500, home: 1500, note: 'Open→1500  Closed→500' },
+  { id: 2, name: 'Wrist Roll',    min: 500, max: 2500, home: 1500, note: 'Left→500   Right→2500' },
+  { id: 3, name: 'Elbow Lower',   min: 500, max: 2500, home: 644,  note: '' },
+  { id: 4, name: 'Elbow Upper',   min: 500, max: 2500, home: 511,  note: '' },
+  { id: 5, name: 'Shoulder',      min: 500, max: 2500, home: 1255, note: '' },
+  { id: 6, name: 'Base Rotate',   min: 500, max: 2500, home: 770,  note: 'Left→500   Right→2500' },
 ];
 
-// Current servo states
-const servoState = {};
-SERVOS.forEach(s => { servoState[s.id] = s.home; });
+// Runtime state
+const servoState   = {};   // current duty values
+const offsetState  = {};   // software offset per servo (-125 to +125)
+SERVOS.forEach(s => { servoState[s.id] = s.home; offsetState[s.id] = 0; });
 
-// Saved poses (persisted to localStorage)
 let savedPoses = JSON.parse(localStorage.getItem('learm_poses') || '[]');
+let theme = localStorage.getItem('learm_theme') || 'dark';
+
+// Per-servo throttle timers for real-time dragging
+const throttleTimers = {};
+const THROTTLE_MS = 40; // ~25 commands/sec — safe for 9600 baud
+
+// ─── Theme ───────────────────────────────────────────────────────────────────
+function applyTheme(t) {
+  theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('learm_theme', t);
+  // Update slider tracks after theme change
+  SERVOS.forEach(s => updateSliderTrack(s.id, servoState[s.id]));
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  applyTheme(theme === 'dark' ? 'light' : 'dark');
+});
+applyTheme(theme);
 
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 const socket = io();
@@ -926,27 +532,23 @@ socket.on('connect', () => {
   log('Socket connected · ' + socket.id, 'ok');
   document.getElementById('footerInfo').textContent = 'socket: ' + socket.id;
 });
-
-socket.on('disconnect', () => {
-  log('Socket disconnected', 'warn');
-  setStatus('disconnected');
-});
+socket.on('disconnect', () => { log('Socket disconnected', 'warn'); setStatus('disconnected'); });
 
 socket.on('serial:status', ({ connected, path, error }) => {
   if (connected) {
     log('Serial connected → ' + path, 'ok');
     setStatus('connected', path);
   } else {
-    log('Serial disconnected' + (error ? ': ' + error : ''), error ? 'err' : 'warn');
+    log('Serial ' + (error ? 'error: ' + error : 'disconnected'), error ? 'err' : 'warn');
     setStatus('disconnected');
   }
 });
 
 socket.on('arm:version', ({ servoType, version }) => {
-  const badge = document.getElementById('fwBadge');
-  badge.textContent = `FW v${version} · ${servoType}`;
-  badge.classList.add('visible');
-  log(`Firmware v${version} · ${servoType} servos`, 'blue');
+  const b = document.getElementById('fwBadge');
+  b.textContent = 'FW v' + version + ' · ' + servoType;
+  b.classList.add('visible');
+  log('Firmware v' + version + ' · ' + servoType + ' servos', 'blue');
 });
 
 socket.on('arm:positions', (positions) => {
@@ -961,44 +563,36 @@ socket.on('arm:positions', (positions) => {
 });
 
 socket.on('arm:raw', ({ cmd, data }) => {
-  log(`RAW cmd=${cmd} data=[${data.join(',')}]`, 'info');
+  log('RAW cmd=' + cmd + ' data=[' + data.join(',') + ']', 'info');
 });
 
 // ─── Status pill ──────────────────────────────────────────────────────────────
-function setStatus(state, detail = '') {
+function setStatus(state) {
   const pill = document.getElementById('statusPill');
   const text = document.getElementById('statusText');
   pill.className = 'status-pill ' + state;
-  if (state === 'connected') {
-    text.textContent = 'CONNECTED';
-  } else {
-    text.textContent = 'DISCONNECTED';
-  }
+  text.textContent = state === 'connected' ? 'CONNECTED' : 'DISCONNECTED';
 }
 
-// ─── Build servo grid ─────────────────────────────────────────────────────────
+// ─── Build servo sliders ──────────────────────────────────────────────────────
 function buildServoGrid() {
   const grid = document.getElementById('servoGrid');
   grid.innerHTML = '';
-
   SERVOS.forEach(s => {
     const row = document.createElement('div');
     row.className = 'servo-row';
-    row.id = 'servoRow_' + s.id;
     row.innerHTML = `
       <div class="servo-id">S${s.id}</div>
-      <div class="servo-name">${s.name}</div>
-      <div class="servo-slider-wrap">
-        <input type="range" 
-               id="slider_${s.id}" 
-               min="${s.min}" max="${s.max}" value="${servoState[s.id]}"
-               style="--c:${s.color}"
-               oninput="onSliderInput(${s.id}, this.value)"
-               onchange="onSliderCommit(${s.id}, this.value)">
+      <div>
+        <div class="servo-name">${s.name}</div>
+        ${s.note ? '<div style="font-family:var(--mono);font-size:9px;color:var(--text-faint)">' + s.note + '</div>' : ''}
       </div>
-      <div class="servo-duty-display" id="duty_${s.id}">
-        ${servoState[s.id]} <span>/ 2500</span>
+      <div style="position:relative">
+        <input type="range" id="slider_${s.id}" min="${s.min}" max="${s.max}" value="${servoState[s.id]}"
+          oninput="onSliderInput(${s.id}, this.value)"
+          onchange="onSliderCommit(${s.id}, this.value)">
       </div>
+      <div class="servo-duty" id="duty_${s.id}">${servoState[s.id]} <small>µs</small></div>
       <button class="servo-home-btn" onclick="servoHome(${s.id})">HOME</button>
     `;
     grid.appendChild(row);
@@ -1006,47 +600,120 @@ function buildServoGrid() {
   });
 }
 
+// Fires on every pixel of drag — throttled to avoid flooding serial at 9600
 function onSliderInput(id, val) {
   val = parseInt(val);
   servoState[id] = val;
   updateSliderTrack(id, val);
-  document.getElementById('duty_' + id).innerHTML = `${val} <span>/ 2500</span>`;
+  document.getElementById('duty_' + id).innerHTML = val + ' <small>µs</small>';
   updateVisualizer();
+
+  // Throttled live send
+  clearTimeout(throttleTimers[id]);
+  throttleTimers[id] = setTimeout(() => {
+    const dur = parseInt(document.getElementById('durationSlider').value);
+    socket.emit('arm:move_servo', { id, duty: val, duration: dur });
+  }, THROTTLE_MS);
 }
 
+// Fires on mouse-up — sends final value immediately (cancels any pending throttle)
 function onSliderCommit(id, val) {
   val = parseInt(val);
+  clearTimeout(throttleTimers[id]);
   const dur = parseInt(document.getElementById('durationSlider').value);
   socket.emit('arm:move_servo', { id, duty: val, duration: dur });
-  log(`S${id} → ${val}  (${dur}ms)`, 'info');
+  log('S' + id + ' (' + SERVOS.find(s=>s.id===id).name + ') → ' + val + ' µs (' + dur + 'ms)', 'info');
 }
 
 function updateSliderUI(id, duty) {
-  const slider = document.getElementById('slider_' + id);
-  const display = document.getElementById('duty_' + id);
-  if (slider) slider.value = duty;
-  if (display) display.innerHTML = `${duty} <span>/ 2500</span>`;
+  const el = document.getElementById('slider_' + id);
+  const du = document.getElementById('duty_' + id);
+  if (el) el.value = duty;
+  if (du) du.innerHTML = duty + ' <small>µs</small>';
   updateSliderTrack(id, duty);
 }
 
 function updateSliderTrack(id, val) {
-  const slider = document.getElementById('slider_' + id);
-  if (!slider) return;
-  const servo = SERVOS.find(s => s.id === id);
-  const pct = ((val - servo.min) / (servo.max - servo.min)) * 100;
-  slider.style.background = `linear-gradient(to right, ${servo.color} ${pct}%, #222228 ${pct}%)`;
+  const el = document.getElementById('slider_' + id);
+  if (!el) return;
+  const s = SERVOS.find(sv => sv.id === id);
+  const pct = ((val - s.min) / (s.max - s.min)) * 100;
+  el.style.background = `linear-gradient(to right, var(--blue) ${pct}%, var(--track-empty) ${pct}%)`;
 }
 
 function servoHome(id) {
   const s = SERVOS.find(sv => sv.id === id);
   onSliderInput(id, s.home);
-  onSliderCommit(id, s.home);
+  clearTimeout(throttleTimers[id]);
+  const dur = parseInt(document.getElementById('durationSlider').value);
+  socket.emit('arm:move_servo', { id, duty: s.home, duration: dur });
   document.getElementById('slider_' + id).value = s.home;
 }
+
+// ─── Build offset grid ────────────────────────────────────────────────────────
+function buildOffsetGrid() {
+  const grid = document.getElementById('offsetGrid');
+  grid.innerHTML = '';
+  SERVOS.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'offset-row';
+    row.innerHTML = `
+      <div class="servo-id">S${s.id}</div>
+      <div class="servo-name" style="font-size:12px">${s.name}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint)">
+        Current: <span id="offsetCur_${s.id}" style="color:var(--blue)">${servoState[s.id]} µs</span>
+      </div>
+      <input type="number" class="offset-input" id="offsetInput_${s.id}"
+        min="-125" max="125" value="${offsetState[s.id]}"
+        title="Software trim offset (−125 to +125 µs)"
+        onchange="applyOffset(${s.id}, this.value)">
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;white-space:nowrap"
+        onclick="setZeroHere(${s.id})">Set Zero Here</button>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+// "Set Zero Here" — calculates offset so current position becomes effective home
+function setZeroHere(id) {
+  const s = SERVOS.find(sv => sv.id === id);
+  // offset = current_pos - home_pos (clamped to ±125)
+  let offset = Math.round(servoState[id] - s.home);
+  offset = Math.max(-125, Math.min(125, offset));
+  offsetState[id] = offset;
+  document.getElementById('offsetInput_' + id).value = offset;
+  socket.emit('arm:set_offset', { id, offset });
+  log('S' + id + ' (' + s.name + ') zero set: offset=' + offset + ' µs', 'ok');
+}
+
+// Manual offset input
+function applyOffset(id, val) {
+  val = parseInt(val) || 0;
+  val = Math.max(-125, Math.min(125, val));
+  offsetState[id] = val;
+  socket.emit('arm:set_offset', { id, offset: val });
+  log('S' + id + ' offset → ' + val + ' µs', 'info');
+}
+
+// Update the "Current" readout in offset panel as sliders move
+function updateOffsetReadouts() {
+  SERVOS.forEach(s => {
+    const el = document.getElementById('offsetCur_' + s.id);
+    if (el) el.textContent = servoState[s.id] + ' µs';
+  });
+}
+
+document.getElementById('saveOffsetsBtn').addEventListener('click', () => {
+  socket.emit('arm:save_offsets');
+  log('Offsets saved to arm flash', 'ok');
+});
 
 // ─── Duration slider ──────────────────────────────────────────────────────────
 document.getElementById('durationSlider').addEventListener('input', function() {
   document.getElementById('durationVal').textContent = this.value + ' ms';
+  // Update duration slider track too
+  const pct = ((this.value - 100) / 2900) * 100;
+  this.style.background = `linear-gradient(to right, var(--blue) ${pct}%, var(--track-empty) ${pct}%)`;
 });
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
@@ -1063,17 +730,15 @@ document.getElementById('disconnectBtn').addEventListener('click', () => {
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   socket.emit('arm:reset');
-  SERVOS.forEach(s => {
-    servoState[s.id] = s.home;
-    updateSliderUI(s.id, s.home);
-  });
+  SERVOS.forEach(s => { servoState[s.id] = s.home; updateSliderUI(s.id, s.home); });
   updateVisualizer();
+  updateOffsetReadouts();
   log('Reset to home position', 'ok');
 });
 
 document.getElementById('readBtn').addEventListener('click', () => {
   socket.emit('arm:read');
-  log('Reading servo positions…', 'info');
+  log('Syncing from arm…', 'info');
 });
 
 document.getElementById('stopBtn').addEventListener('click', () => {
@@ -1085,14 +750,11 @@ document.getElementById('sendAllBtn').addEventListener('click', () => {
   const dur = parseInt(document.getElementById('durationSlider').value);
   const servos = SERVOS.map(s => ({ id: s.id, duty: servoState[s.id] }));
   socket.emit('arm:move_servos', { servos, duration: dur });
-
-  // Flash animation on servo grid
   const grid = document.getElementById('servoGrid');
   grid.classList.remove('flash-send');
-  void grid.offsetWidth; // reflow
+  void grid.offsetWidth;
   grid.classList.add('flash-send');
-
-  log(`All servos sent simultaneously (${dur}ms)`, 'blue');
+  log('All 6 servos sent (' + dur + 'ms)', 'blue');
 });
 
 document.getElementById('refreshPortsBtn').addEventListener('click', async () => {
@@ -1102,7 +764,7 @@ document.getElementById('refreshPortsBtn').addEventListener('click', async () =>
     const { ports } = await res.json();
     const sel = document.getElementById('portSelect');
     sel.innerHTML = '';
-    if (ports.length === 0) {
+    if (!ports.length) {
       sel.innerHTML = '<option value="">No ports found</option>';
       log('No serial ports found', 'warn');
     } else {
@@ -1112,57 +774,48 @@ document.getElementById('refreshPortsBtn').addEventListener('click', async () =>
         opt.textContent = p.path + (p.manufacturer ? '  ·  ' + p.manufacturer : '');
         sel.appendChild(opt);
       });
-      log(`Found ${ports.length} port(s)`, 'ok');
+      log('Found ' + ports.length + ' port(s)', 'ok');
     }
-  } catch (e) {
-    log('Port scan failed: ' + e.message, 'err');
-  }
+  } catch (e) { log('Port scan failed: ' + e.message, 'err'); }
 });
 
-// ─── Pose presets ──────────────────────────────────────────────────────────────
-function savePoses() {
-  localStorage.setItem('learm_poses', JSON.stringify(savedPoses));
-}
+// ─── Saved poses ──────────────────────────────────────────────────────────────
+function savePosesToStorage() { localStorage.setItem('learm_poses', JSON.stringify(savedPoses)); }
 
 function renderPresets() {
   const body = document.getElementById('presetsBody');
-  body.innerHTML = '';
-
-  if (savedPoses.length === 0) {
-    body.innerHTML = `<div style="font-family:var(--mono);font-size:11px;color:var(--black-5);text-align:center;padding:12px 0;">
-      No saved poses yet. Move the arm and click "+ Save Current".
-    </div>`;
+  if (!savedPoses.length) {
+    body.innerHTML = '<div class="presets-empty">No saved poses yet.<br>Move the arm and click "+ Save Current".</div>';
     return;
   }
-
+  body.innerHTML = '';
   savedPoses.forEach((pose, idx) => {
-    const el = document.createElement('div');
-    el.style.cssText = 'display:flex;align-items:center;gap:8px;';
-    el.innerHTML = `
-      <div class="preset-btn" style="flex:1" onclick="loadPose(${idx})">
+    const wrap = document.createElement('div');
+    wrap.className = 'preset-item';
+    wrap.style.marginBottom = '7px';
+    wrap.innerHTML = `
+      <div class="preset-btn" onclick="loadPose(${idx})">
         <div>
           <div class="preset-name">${pose.name}</div>
-          <div class="preset-desc">${Object.entries(pose.servos).map(([id,d]) => `S${id}:${d}`).join('  ')}</div>
+          <div class="preset-desc">${Object.entries(pose.servos).map(([id,d]) => 'S'+id+':'+d).join('  ')}</div>
         </div>
-        <svg class="preset-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M3 8l10 0M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="var(--blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <button onclick="deletePose(${idx})" style="background:none;border:none;color:var(--black-5);cursor:pointer;padding:6px;font-size:16px;line-height:1;" title="Delete">×</button>
+      <button class="preset-del" onclick="deletePose(${idx})" title="Delete">×</button>
     `;
-    body.appendChild(el);
+    body.appendChild(wrap);
   });
 }
 
 document.getElementById('savePoseBtn').addEventListener('click', () => {
   const name = prompt('Pose name:', 'Pose ' + (savedPoses.length + 1));
   if (!name) return;
-  const snapshot = {};
-  SERVOS.forEach(s => { snapshot[s.id] = servoState[s.id]; });
-  savedPoses.push({ name, servos: snapshot });
-  savePoses();
+  const snap = {};
+  SERVOS.forEach(s => { snap[s.id] = servoState[s.id]; });
+  savedPoses.push({ name, servos: snap });
+  savePosesToStorage();
   renderPresets();
-  log(`Pose "${name}" saved`, 'ok');
+  log('Pose "' + name + '" saved', 'ok');
 });
 
 function loadPose(idx) {
@@ -1177,110 +830,97 @@ function loadPose(idx) {
   });
   socket.emit('arm:move_servos', { servos, duration: dur });
   updateVisualizer();
-  log(`Pose "${pose.name}" loaded (${dur}ms)`, 'blue');
+  updateOffsetReadouts();
+  log('Pose "' + pose.name + '" → arm (' + dur + 'ms)', 'blue');
 }
 
 function deletePose(idx) {
   const name = savedPoses[idx].name;
   savedPoses.splice(idx, 1);
-  savePoses();
+  savePosesToStorage();
   renderPresets();
-  log(`Pose "${name}" deleted`, 'warn');
+  log('Pose "' + name + '" deleted', 'warn');
 }
 
-// ─── Simple arm visualizer ────────────────────────────────────────────────────
+// ─── Arm visualizer ───────────────────────────────────────────────────────────
 function updateVisualizer() {
-  // We do a simplified top-down / side-view based on duty values.
-  // Servo IDs: 1=base, 2=shoulder, 3=elbow-upper, 4=elbow-lower, 5=wrist, 6=gripper
+  updateOffsetReadouts();
 
-  function dutyToAngle(duty, minDeg, maxDeg) {
-    return minDeg + (duty / 2500) * (maxDeg - minDeg);
-  }
+  // Map duties to approximate joint angles for the 2D side-view sketch
+  // PWM: 500µs = 0°, 2500µs = 180° (standard servo convention)
+  function dutyToDeg(duty) { return ((duty - 500) / 2000) * 180; }
 
-  // Simple 2D side projection
-  const baseX = 100, baseY = 205;
-  const seg1Len = 40, seg2Len = 45, seg3Len = 35, seg4Len = 28, seg5Len = 22;
+  // Shoulder (S5): 500=low, 2500=high → visualize as angle from vertical
+  const a5 = (dutyToDeg(servoState[5]) - 90) * Math.PI / 180;  // shoulder
+  const a4 = (dutyToDeg(servoState[4]) - 90) * Math.PI / 180;  // elbow upper
+  const a3 = (dutyToDeg(servoState[3]) - 90) * Math.PI / 180;  // elbow lower
+  const a2 = (dutyToDeg(servoState[2]) - 90) * Math.PI / 180;  // wrist
 
-  // Shoulder angle (duty 0=full down ~-90°, 2500=full up ~90°)
-  const a2 = dutyToAngle(servoState[2], -90, 90) * Math.PI / 180;
-  const a3 = dutyToAngle(servoState[3], -70, 70) * Math.PI / 180;
-  const a4 = dutyToAngle(servoState[4], -60, 60) * Math.PI / 180;
-  const a5 = dutyToAngle(servoState[5], -45, 45) * Math.PI / 180;
+  const bx = 100, by = 197;
+  const L1 = 37, L2 = 42, L3 = 34, L4 = 26, L5 = 22;
 
-  const p1x = baseX, p1y = baseY - seg1Len;
-  const p2x = p1x + Math.sin(a2) * seg2Len;
-  const p2y = p1y - Math.cos(a2) * seg2Len;
-  const p3x = p2x + Math.sin(a2 + a3) * seg3Len;
-  const p3y = p2y - Math.cos(a2 + a3) * seg3Len;
-  const p4x = p3x + Math.sin(a2 + a3 + a4) * seg4Len;
-  const p4y = p3y - Math.cos(a2 + a3 + a4) * seg4Len;
-  const p5x = p4x + Math.sin(a2 + a3 + a4 + a5) * seg5Len;
-  const p5y = p4y - Math.cos(a2 + a3 + a4 + a5) * seg5Len;
+  const p1x = bx, p1y = by - L1;
+  const p2x = p1x + Math.sin(a5) * L2, p2y = p1y - Math.cos(a5) * L2;
+  const p3x = p2x + Math.sin(a5 + a4) * L3, p3y = p2y - Math.cos(a5 + a4) * L3;
+  const p4x = p3x + Math.sin(a5 + a4 + a3) * L4, p4y = p3y - Math.cos(a5 + a4 + a3) * L4;
+  const p5x = p4x + Math.sin(a5 + a4 + a3 + a2) * L5, p5y = p4y - Math.cos(a5 + a4 + a3 + a2) * L5;
 
   function setLine(id, x1, y1, x2, y2) {
     const el = document.getElementById(id);
-    if (el) { el.setAttribute('x1', x1); el.setAttribute('y1', y1); el.setAttribute('x2', x2); el.setAttribute('y2', y2); }
+    if (el) { el.setAttribute('x1',x1); el.setAttribute('y1',y1); el.setAttribute('x2',x2); el.setAttribute('y2',y2); }
   }
   function setCircle(id, cx, cy) {
     const el = document.getElementById(id);
     if (el) { el.setAttribute('cx', cx); el.setAttribute('cy', cy); }
   }
 
-  setLine('seg1', baseX, baseY, p1x, p1y);
-  setCircle('joint1', p1x, p1y);
+  setLine('seg1', bx, by, p1x, p1y);
+  setCircle('j1', p1x, p1y);
   setLine('seg2', p1x, p1y, p2x, p2y);
-  setCircle('joint2', p2x, p2y);
+  setCircle('j2', p2x, p2y);
   setLine('seg3', p2x, p2y, p3x, p3y);
-  setCircle('joint3', p3x, p3y);
+  setCircle('j3', p3x, p3y);
   setLine('seg4', p3x, p3y, p4x, p4y);
-  setCircle('joint4', p4x, p4y);
+  setCircle('j4', p4x, p4y);
   setLine('seg5', p4x, p4y, p5x, p5y);
 
-  // Gripper spread based on servo 6
-  const gripSpread = 8 + (servoState[6] / 2500) * 12;
+  // Gripper spread from S1 duty
+  const gripSpread = 5 + ((servoState[1] - 500) / 1000) * 12;
   const gripAngle = Math.atan2(p5x - p4x, p4y - p5y);
-  document.getElementById('grip1').setAttribute('x1', p5x);
-  document.getElementById('grip1').setAttribute('y1', p5y);
-  document.getElementById('grip1').setAttribute('x2', p5x - Math.cos(gripAngle) * gripSpread);
-  document.getElementById('grip1').setAttribute('y2', p5y - Math.sin(gripAngle) * gripSpread);
-  document.getElementById('grip2').setAttribute('x1', p5x);
-  document.getElementById('grip2').setAttribute('y1', p5y);
-  document.getElementById('grip2').setAttribute('x2', p5x + Math.cos(gripAngle) * gripSpread);
-  document.getElementById('grip2').setAttribute('y2', p5y + Math.sin(gripAngle) * gripSpread);
+  const g1 = document.getElementById('grip1'), g2 = document.getElementById('grip2');
+  if (g1) { g1.setAttribute('x1',p5x); g1.setAttribute('y1',p5y); g1.setAttribute('x2',p5x - Math.cos(gripAngle)*gripSpread); g1.setAttribute('y2',p5y - Math.sin(gripAngle)*gripSpread); }
+  if (g2) { g2.setAttribute('x1',p5x); g2.setAttribute('y1',p5y); g2.setAttribute('x2',p5x + Math.cos(gripAngle)*gripSpread); g2.setAttribute('y2',p5y + Math.sin(gripAngle)*gripSpread); }
 
-  // Update position readout
+  // Position readout
   const readout = document.getElementById('posReadout');
-  readout.innerHTML = SERVOS.map(s =>
-    `<div style="background:var(--black-3);border:1px solid var(--black-4);border-radius:4px;padding:5px 8px;text-align:center;">
-       <div style="font-family:var(--mono);font-size:9px;color:var(--bone-faint);letter-spacing:0.1em">S${s.id}</div>
-       <div style="font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:500">${servoState[s.id]}</div>
-     </div>`
-  ).join('');
+  if (readout) {
+    readout.innerHTML = SERVOS.map(s =>
+      `<div class="pos-cell"><div class="pos-label">S${s.id} ${s.name.split(' ')[0].toUpperCase()}</div><div class="pos-value">${servoState[s.id]}</div></div>`
+    ).join('');
+  }
 }
 
-// ─── Console logging ──────────────────────────────────────────────────────────
+// ─── Console ──────────────────────────────────────────────────────────────────
 function log(msg, level = 'info') {
-  const console_ = document.getElementById('consoleLog');
+  const container = document.getElementById('consoleLog');
   const entry = document.createElement('div');
   entry.className = 'log-entry ' + level;
-  const now = new Date();
-  const t = now.toTimeString().slice(0, 8);
+  const t = new Date().toTimeString().slice(0,8);
   entry.innerHTML = `<span class="log-time">${t}</span><span class="log-msg">${msg}</span>`;
-  console_.prepend(entry);
-  // Keep max 80 entries
-  while (console_.children.length > 80) console_.removeChild(console_.lastChild);
+  container.prepend(entry);
+  while (container.children.length > 80) container.removeChild(container.lastChild);
 }
-
-function clearLog() {
-  document.getElementById('consoleLog').innerHTML = '';
-}
+function clearLog() { document.getElementById('consoleLog').innerHTML = ''; }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 buildServoGrid();
+buildOffsetGrid();
 renderPresets();
 updateVisualizer();
-log('LeArm Controller ready', 'blue');
-log('Click ↻ Scan to detect your serial port, then Connect.', 'info');
+// Init duration track
+document.getElementById('durationSlider').dispatchEvent(new Event('input'));
+log('LeArm Controller ready · servo IDs corrected from firmware source', 'blue');
+log('S1=Gripper S2=Wrist S3=ElbowLower S4=ElbowUpper S5=Shoulder S6=Base', 'info');
 </script>
 </body>
 </html>
