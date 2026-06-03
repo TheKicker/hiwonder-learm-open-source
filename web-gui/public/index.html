@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeArm Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+/* ─── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --black:       #0A0A0B;
+  --black-2:     #111113;
+  --black-3:     #18181C;
+  --black-4:     #222228;
+  --black-5:     #2C2C34;
+  --bone:        #F0EDE6;
+  --bone-dim:    #C8C4BC;
+  --bone-faint:  #8A877F;
+  --blue:        #27BCFE;
+  --blue-glow:   rgba(39, 188, 254, 0.18);
+  --blue-dim:    rgba(39, 188, 254, 0.08);
+  --blue-dark:   #1A8FBF;
+  --danger:      #FF4C4C;
+  --warn:        #FFA53A;
+  --success:     #3EE0A0;
+  --radius:      6px;
+  --radius-lg:   12px;
+  --mono:        'JetBrains Mono', monospace;
+  --sans:        'Syne', sans-serif;
+}
+
+/* ─── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* Subtle grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+/* Ambient blue glow top-right */
+body::after {
+  content: '';
+  position: fixed;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(39,188,254,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
+.app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "header" "main" "footer";
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--black-4);
+  background: rgba(10,10,11,0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  position: relative;
+}
+
+.logo-mark svg { width: 100%; height: 100%; }
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.logo-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone);
+  line-height: 1.1;
+}
+
+.logo-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--bone-faint);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Connection status pill */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--black-5);
+  background: var(--black-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  transition: all 0.3s;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--black-5);
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.status-pill.connected .status-dot {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.status-pill.connected {
+  border-color: rgba(62, 224, 160, 0.2);
+  color: var(--success);
+}
+
+.status-pill.error .status-dot {
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger);
+}
+.status-pill.error { border-color: rgba(255,76,76,0.2); color: var(--danger); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Firmware badge */
+.fw-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--bone-faint);
+  padding: 4px 10px;
+  border: 1px solid var(--black-4);
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  display: none;
+}
+.fw-badge.visible { display: block; }
+
+/* ─── Main ────────────────────────────────────────────────────────────────── */
+main {
+  grid-area: main;
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ─── Panel base ─────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--black-2);
+  border: 1px solid var(--black-4);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--black-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.panel-body { padding: 20px; }
+
+/* ─── Left column ────────────────────────────────────────────────────────── */
+.left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Connection panel */
+.connect-panel .panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.field-input {
+  background: var(--black-3);
+  border: 1px solid var(--black-5);
+  border-radius: var(--radius);
+  color: var(--bone);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 12px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.field-input:focus { border-color: var(--blue); }
+
+.field-input option {
+  background: var(--black-3);
+}
+
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-blue {
+  background: var(--blue);
+  color: var(--black);
+  border-color: var(--blue);
+}
+.btn-blue:hover { background: #45C9FF; border-color: #45C9FF; box-shadow: 0 0 20px var(--blue-glow); }
+.btn-blue:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--bone-dim);
+  border-color: var(--black-5);
+}
+.btn-ghost:hover { border-color: var(--bone-faint); color: var(--bone); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: rgba(255,76,76,0.3);
+}
+.btn-danger:hover { background: rgba(255,76,76,0.1); border-color: var(--danger); }
+
+.btn-warn {
+  background: transparent;
+  color: var(--warn);
+  border-color: rgba(255,165,58,0.3);
+}
+.btn-warn:hover { background: rgba(255,165,58,0.1); border-color: var(--warn); }
+
+.btn-full { width: 100%; }
+
+.btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* Quick actions panel */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Arm visualizer */
+.arm-vis-panel .panel-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.arm-svg-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.arm-svg-wrap svg {
+  width: 200px;
+  height: 240px;
+}
+
+/* Console */
+.console-panel .panel-body {
+  padding: 0;
+}
+
+.console-log {
+  height: 140px;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.console-log::-webkit-scrollbar { width: 4px; }
+.console-log::-webkit-scrollbar-track { background: transparent; }
+.console-log::-webkit-scrollbar-thumb { background: var(--black-5); border-radius: 2px; }
+
+.log-entry {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  opacity: 0;
+  animation: fadein 0.2s forwards;
+}
+
+@keyframes fadein { to { opacity: 1; } }
+
+.log-time { color: var(--black-5); flex-shrink: 0; }
+.log-msg { color: var(--bone-dim); word-break: break-all; }
+.log-entry.info .log-msg  { color: var(--bone-dim); }
+.log-entry.ok .log-msg    { color: var(--success); }
+.log-entry.warn .log-msg  { color: var(--warn); }
+.log-entry.err .log-msg   { color: var(--danger); }
+.log-entry.blue .log-msg  { color: var(--blue); }
+
+/* ─── Right column — Servo sliders ──────────────────────────────────────── */
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.servos-panel .panel-body {
+  padding: 0;
+}
+
+.servo-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.servo-row {
+  display: grid;
+  grid-template-columns: 28px 100px 1fr 80px 56px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--black-3);
+  transition: background 0.15s;
+}
+.servo-row:last-child { border-bottom: none; }
+.servo-row:hover { background: var(--black-3); }
+
+.servo-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--blue);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.servo-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bone);
+  letter-spacing: 0.04em;
+}
+
+/* Custom range slider */
+.servo-slider-wrap {
+  position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--black-4);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+  box-shadow: 0 0 0 3px var(--black-2), 0 0 0 4px var(--blue);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+input[type=range]:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--black-2), 0 0 0 5px var(--blue), 0 0 16px var(--blue-glow);
+  transform: scale(1.15);
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+  border: 3px solid var(--black-2);
+  box-shadow: 0 0 8px var(--blue-glow);
+}
+
+/* Track fill via linear-gradient updated in JS */
+.servo-duty-display {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--bone);
+  text-align: right;
+  min-width: 60px;
+}
+
+.servo-duty-display span {
+  color: var(--bone-faint);
+  font-size: 10px;
+}
+
+.servo-home-btn {
+  background: transparent;
+  border: 1px solid var(--black-5);
+  border-radius: 4px;
+  color: var(--bone-faint);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+}
+.servo-home-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-dim);
+}
+
+/* Servo panel controls bar */
+.servos-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Duration control */
+.duration-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--black-3);
+  border: 1px solid var(--black-4);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+}
+
+.duration-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  white-space: nowrap;
+}
+
+.duration-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--blue);
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Presets panel */
+.presets-panel .panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background: var(--black-3);
+  border: 1px solid var(--black-4);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  gap: 8px;
+}
+.preset-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue-dim);
+}
+
+.preset-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bone);
+  letter-spacing: 0.03em;
+}
+
+.preset-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--bone-faint);
+}
+
+.preset-icon {
+  color: var(--blue);
+  opacity: 0.6;
+}
+
+/* ─── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  grid-area: footer;
+  padding: 12px 32px;
+  border-top: 1px solid var(--black-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--black-2);
+}
+
+.footer-left {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--black-5);
+  letter-spacing: 0.08em;
+}
+
+.footer-right {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--black-5);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Send-all flash animation ───────────────────────────────────────────── */
+@keyframes flashBlue {
+  0% { box-shadow: 0 0 0 0 var(--blue-glow); }
+  50% { box-shadow: 0 0 30px 6px var(--blue-glow); }
+  100% { box-shadow: 0 0 0 0 var(--blue-glow); }
+}
+.flash-send { animation: flashBlue 0.4s ease-out; }
+
+/* ─── Modal overlay (connection helper) ─────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--black-2);
+  border: 1px solid var(--black-5);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 380px;
+  max-width: 90vw;
+  transform: translateY(10px);
+  transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bone);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+.modal-body {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--bone-faint);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.modal-body code {
+  color: var(--blue);
+  background: var(--black-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ─── Scroll customization ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--black-4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--black-5); }
+
+/* ─── Responsive tweak ───────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; }
+  .left-col { order: 2; }
+  .right-col { order: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <!-- Stylized arm icon -->
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="32" height="32" rx="7" fill="#18181C" stroke="#27BCFE" stroke-width="1.2"/>
+        <!-- arm segments -->
+        <circle cx="17" cy="28" r="3" fill="#27BCFE" opacity="0.9"/>
+        <line x1="17" y1="25" x2="17" y2="18" stroke="#27BCFE" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="17" y1="18" x2="11" y2="11" stroke="#27BCFE" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <line x1="17" y1="18" x2="23" y2="12" stroke="#C8C4BC" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+        <circle cx="17" cy="18" r="2.5" fill="#111113" stroke="#27BCFE" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="2" fill="#27BCFE" opacity="0.7"/>
+        <circle cx="23" cy="12" r="1.5" fill="#C8C4BC" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-title">LeArm Controller</div>
+      <div class="logo-sub">Hiwonder xArm1S · 6-DOF</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="fw-badge" id="fwBadge">—</div>
+    <div class="status-pill" id="statusPill">
+      <div class="status-dot"></div>
+      <span id="statusText">DISCONNECTED</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ MAIN ══════════════════════════════════════════════════════════════════ -->
+<main>
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- Connection Panel -->
+    <div class="panel connect-panel">
+      <div class="panel-header">
+        <span class="panel-title">Serial Connection</span>
+        <button class="btn btn-ghost" id="refreshPortsBtn" style="padding:4px 10px;font-size:11px;">
+          ↻ Scan
+        </button>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label class="field-label">Serial Port</label>
+          <select class="field-input" id="portSelect">
+            <option value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+            <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>
+            <option value="/dev/ttyACM0">/dev/ttyACM0</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-blue" id="connectBtn">
+            <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Connect
+          </button>
+          <button class="btn btn-ghost" id="disconnectBtn">
+            <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Disconnect
+          </button>
+        </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--black-5);line-height:1.6;padding-top:4px;">
+          Arm must be in <span style="color:var(--blue)">PC mode</span> — press button once after power-on.
+          LED blinks slowly (1s) to confirm.
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Quick Actions</span>
+      </div>
+      <div class="panel-body quick-actions">
+        <button class="btn btn-ghost btn-full" id="resetBtn">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 1 1 8 3M8 1v4l3-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset to Home Position
+        </button>
+        <button class="btn btn-ghost btn-full" id="readBtn">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Sync Positions from Arm
+        </button>
+        <button class="btn btn-warn btn-full" id="stopBtn">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+          Stop All Motion
+        </button>
+        <button class="btn btn-ghost btn-full" id="sendAllBtn">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none"><path d="M2 8l10 0M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Send All Servos Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Arm Visualizer -->
+    <div class="panel arm-vis-panel">
+      <div class="panel-header">
+        <span class="panel-title">Live Pose</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--black-5)">DUTY UNITS</span>
+      </div>
+      <div class="panel-body">
+        <div class="arm-svg-wrap">
+          <svg id="armVis" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Base -->
+            <ellipse cx="100" cy="220" rx="40" ry="8" fill="#18181C" stroke="#2C2C34" stroke-width="1.5"/>
+            <rect x="85" y="205" width="30" height="18" rx="4" fill="#18181C" stroke="#27BCFE" stroke-width="1" opacity="0.6"/>
+            <!-- Segments will be updated dynamically by JS -->
+            <line id="seg1" x1="100" y1="205" x2="100" y2="165" stroke="#27BCFE" stroke-width="4" stroke-linecap="round"/>
+            <circle id="joint1" cx="100" cy="165" r="6" fill="#111113" stroke="#27BCFE" stroke-width="2"/>
+            <line id="seg2" x1="100" y1="165" x2="100" y2="120" stroke="#27BCFE" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+            <circle id="joint2" cx="100" cy="120" r="5" fill="#111113" stroke="#27BCFE" stroke-width="2" opacity="0.8"/>
+            <line id="seg3" x1="100" y1="120" x2="100" y2="85" stroke="#C8C4BC" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+            <circle id="joint3" cx="100" cy="85" r="4" fill="#111113" stroke="#C8C4BC" stroke-width="1.5" opacity="0.6"/>
+            <line id="seg4" x1="100" y1="85" x2="115" y2="62" stroke="#C8C4BC" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <circle id="joint4" cx="115" cy="62" r="3.5" fill="#111113" stroke="#C8C4BC" stroke-width="1.5" opacity="0.5"/>
+            <line id="seg5" x1="115" y1="62" x2="128" y2="45" stroke="#8A877F" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+            <!-- Gripper -->
+            <line id="grip1" x1="128" y1="45" x2="122" y2="35" stroke="#8A877F" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+            <line id="grip2" x1="128" y1="45" x2="135" y2="35" stroke="#8A877F" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </div>
+        <div id="posReadout" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Console -->
+    <div class="panel console-panel">
+      <div class="panel-header">
+        <span class="panel-title">Console</span>
+        <button onclick="clearLog()" style="font-family:var(--mono);font-size:10px;color:var(--black-5);background:none;border:none;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;">CLR</button>
+      </div>
+      <div class="console-log" id="consoleLog"></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Duration -->
+    <div class="duration-control">
+      <span class="duration-label">Move Duration</span>
+      <input type="range" id="durationSlider" min="100" max="3000" value="500" step="50" style="flex:1">
+      <span class="duration-value" id="durationVal">500 ms</span>
+    </div>
+
+    <!-- Servo Sliders -->
+    <div class="panel servos-panel">
+      <div class="panel-header">
+        <span class="panel-title">Servo Control</span>
+        <div class="servos-controls">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--black-5)">DUTY 0 – 2500</span>
+        </div>
+      </div>
+      <div class="servo-grid" id="servoGrid">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div class="panel presets-panel">
+      <div class="panel-header">
+        <span class="panel-title">Saved Poses</span>
+        <button class="btn btn-ghost" id="savePoseBtn" style="padding:4px 10px;font-size:11px;">+ Save Current</button>
+      </div>
+      <div class="panel-body" id="presetsBody">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-left">LEARM CONTROLLER · HIWONDER XARM1S · 6DOF · 9600 BAUD</div>
+  <div class="footer-right" id="footerInfo">socket: —</div>
+</footer>
+
+</div><!-- .app -->
+
+<!-- ═══ JAVASCRIPT ════════════════════════════════════════════════════════════ -->
+<script>
+// ─── Servo config ─────────────────────────────────────────────────────────────
+const SERVOS = [
+  { id: 1, name: 'Base Rotate',   min: 0,   max: 2500, home: 770,  color: '#27BCFE' },
+  { id: 2, name: 'Shoulder',      min: 0,   max: 2500, home: 1500, color: '#27BCFE' },
+  { id: 3, name: 'Elbow Upper',   min: 0,   max: 2500, home: 644,  color: '#70D4FF' },
+  { id: 4, name: 'Elbow Lower',   min: 0,   max: 2500, home: 511,  color: '#70D4FF' },
+  { id: 5, name: 'Wrist',         min: 0,   max: 2500, home: 1255, color: '#C8C4BC' },
+  { id: 6, name: 'Gripper',       min: 0,   max: 2500, home: 1500, color: '#C8C4BC' },
+];
+
+// Current servo states
+const servoState = {};
+SERVOS.forEach(s => { servoState[s.id] = s.home; });
+
+// Saved poses (persisted to localStorage)
+let savedPoses = JSON.parse(localStorage.getItem('learm_poses') || '[]');
+
+// ─── Socket.IO ────────────────────────────────────────────────────────────────
+const socket = io();
+
+socket.on('connect', () => {
+  log('Socket connected · ' + socket.id, 'ok');
+  document.getElementById('footerInfo').textContent = 'socket: ' + socket.id;
+});
+
+socket.on('disconnect', () => {
+  log('Socket disconnected', 'warn');
+  setStatus('disconnected');
+});
+
+socket.on('serial:status', ({ connected, path, error }) => {
+  if (connected) {
+    log('Serial connected → ' + path, 'ok');
+    setStatus('connected', path);
+  } else {
+    log('Serial disconnected' + (error ? ': ' + error : ''), error ? 'err' : 'warn');
+    setStatus('disconnected');
+  }
+});
+
+socket.on('arm:version', ({ servoType, version }) => {
+  const badge = document.getElementById('fwBadge');
+  badge.textContent = `FW v${version} · ${servoType}`;
+  badge.classList.add('visible');
+  log(`Firmware v${version} · ${servoType} servos`, 'blue');
+});
+
+socket.on('arm:positions', (positions) => {
+  positions.forEach(({ id, duty }) => {
+    if (servoState[id] !== undefined) {
+      servoState[id] = duty;
+      updateSliderUI(id, duty);
+    }
+  });
+  updateVisualizer();
+  log('Positions synced from arm', 'ok');
+});
+
+socket.on('arm:raw', ({ cmd, data }) => {
+  log(`RAW cmd=${cmd} data=[${data.join(',')}]`, 'info');
+});
+
+// ─── Status pill ──────────────────────────────────────────────────────────────
+function setStatus(state, detail = '') {
+  const pill = document.getElementById('statusPill');
+  const text = document.getElementById('statusText');
+  pill.className = 'status-pill ' + state;
+  if (state === 'connected') {
+    text.textContent = 'CONNECTED';
+  } else {
+    text.textContent = 'DISCONNECTED';
+  }
+}
+
+// ─── Build servo grid ─────────────────────────────────────────────────────────
+function buildServoGrid() {
+  const grid = document.getElementById('servoGrid');
+  grid.innerHTML = '';
+
+  SERVOS.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'servo-row';
+    row.id = 'servoRow_' + s.id;
+    row.innerHTML = `
+      <div class="servo-id">S${s.id}</div>
+      <div class="servo-name">${s.name}</div>
+      <div class="servo-slider-wrap">
+        <input type="range" 
+               id="slider_${s.id}" 
+               min="${s.min}" max="${s.max}" value="${servoState[s.id]}"
+               style="--c:${s.color}"
+               oninput="onSliderInput(${s.id}, this.value)"
+               onchange="onSliderCommit(${s.id}, this.value)">
+      </div>
+      <div class="servo-duty-display" id="duty_${s.id}">
+        ${servoState[s.id]} <span>/ 2500</span>
+      </div>
+      <button class="servo-home-btn" onclick="servoHome(${s.id})">HOME</button>
+    `;
+    grid.appendChild(row);
+    updateSliderTrack(s.id, servoState[s.id]);
+  });
+}
+
+function onSliderInput(id, val) {
+  val = parseInt(val);
+  servoState[id] = val;
+  updateSliderTrack(id, val);
+  document.getElementById('duty_' + id).innerHTML = `${val} <span>/ 2500</span>`;
+  updateVisualizer();
+}
+
+function onSliderCommit(id, val) {
+  val = parseInt(val);
+  const dur = parseInt(document.getElementById('durationSlider').value);
+  socket.emit('arm:move_servo', { id, duty: val, duration: dur });
+  log(`S${id} → ${val}  (${dur}ms)`, 'info');
+}
+
+function updateSliderUI(id, duty) {
+  const slider = document.getElementById('slider_' + id);
+  const display = document.getElementById('duty_' + id);
+  if (slider) slider.value = duty;
+  if (display) display.innerHTML = `${duty} <span>/ 2500</span>`;
+  updateSliderTrack(id, duty);
+}
+
+function updateSliderTrack(id, val) {
+  const slider = document.getElementById('slider_' + id);
+  if (!slider) return;
+  const servo = SERVOS.find(s => s.id === id);
+  const pct = ((val - servo.min) / (servo.max - servo.min)) * 100;
+  slider.style.background = `linear-gradient(to right, ${servo.color} ${pct}%, #222228 ${pct}%)`;
+}
+
+function servoHome(id) {
+  const s = SERVOS.find(sv => sv.id === id);
+  onSliderInput(id, s.home);
+  onSliderCommit(id, s.home);
+  document.getElementById('slider_' + id).value = s.home;
+}
+
+// ─── Duration slider ──────────────────────────────────────────────────────────
+document.getElementById('durationSlider').addEventListener('input', function() {
+  document.getElementById('durationVal').textContent = this.value + ' ms';
+});
+
+// ─── Buttons ──────────────────────────────────────────────────────────────────
+document.getElementById('connectBtn').addEventListener('click', () => {
+  const path = document.getElementById('portSelect').value;
+  socket.emit('serial:connect', { path });
+  log('Connecting to ' + path + '…', 'info');
+});
+
+document.getElementById('disconnectBtn').addEventListener('click', () => {
+  socket.emit('serial:disconnect');
+  log('Disconnecting…', 'warn');
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  socket.emit('arm:reset');
+  SERVOS.forEach(s => {
+    servoState[s.id] = s.home;
+    updateSliderUI(s.id, s.home);
+  });
+  updateVisualizer();
+  log('Reset to home position', 'ok');
+});
+
+document.getElementById('readBtn').addEventListener('click', () => {
+  socket.emit('arm:read');
+  log('Reading servo positions…', 'info');
+});
+
+document.getElementById('stopBtn').addEventListener('click', () => {
+  socket.emit('arm:stop');
+  log('STOP sent', 'warn');
+});
+
+document.getElementById('sendAllBtn').addEventListener('click', () => {
+  const dur = parseInt(document.getElementById('durationSlider').value);
+  const servos = SERVOS.map(s => ({ id: s.id, duty: servoState[s.id] }));
+  socket.emit('arm:move_servos', { servos, duration: dur });
+
+  // Flash animation on servo grid
+  const grid = document.getElementById('servoGrid');
+  grid.classList.remove('flash-send');
+  void grid.offsetWidth; // reflow
+  grid.classList.add('flash-send');
+
+  log(`All servos sent simultaneously (${dur}ms)`, 'blue');
+});
+
+document.getElementById('refreshPortsBtn').addEventListener('click', async () => {
+  log('Scanning ports…', 'info');
+  try {
+    const res = await fetch('/api/ports');
+    const { ports } = await res.json();
+    const sel = document.getElementById('portSelect');
+    sel.innerHTML = '';
+    if (ports.length === 0) {
+      sel.innerHTML = '<option value="">No ports found</option>';
+      log('No serial ports found', 'warn');
+    } else {
+      ports.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.path;
+        opt.textContent = p.path + (p.manufacturer ? '  ·  ' + p.manufacturer : '');
+        sel.appendChild(opt);
+      });
+      log(`Found ${ports.length} port(s)`, 'ok');
+    }
+  } catch (e) {
+    log('Port scan failed: ' + e.message, 'err');
+  }
+});
+
+// ─── Pose presets ──────────────────────────────────────────────────────────────
+function savePoses() {
+  localStorage.setItem('learm_poses', JSON.stringify(savedPoses));
+}
+
+function renderPresets() {
+  const body = document.getElementById('presetsBody');
+  body.innerHTML = '';
+
+  if (savedPoses.length === 0) {
+    body.innerHTML = `<div style="font-family:var(--mono);font-size:11px;color:var(--black-5);text-align:center;padding:12px 0;">
+      No saved poses yet. Move the arm and click "+ Save Current".
+    </div>`;
+    return;
+  }
+
+  savedPoses.forEach((pose, idx) => {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:8px;';
+    el.innerHTML = `
+      <div class="preset-btn" style="flex:1" onclick="loadPose(${idx})">
+        <div>
+          <div class="preset-name">${pose.name}</div>
+          <div class="preset-desc">${Object.entries(pose.servos).map(([id,d]) => `S${id}:${d}`).join('  ')}</div>
+        </div>
+        <svg class="preset-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8l10 0M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <button onclick="deletePose(${idx})" style="background:none;border:none;color:var(--black-5);cursor:pointer;padding:6px;font-size:16px;line-height:1;" title="Delete">×</button>
+    `;
+    body.appendChild(el);
+  });
+}
+
+document.getElementById('savePoseBtn').addEventListener('click', () => {
+  const name = prompt('Pose name:', 'Pose ' + (savedPoses.length + 1));
+  if (!name) return;
+  const snapshot = {};
+  SERVOS.forEach(s => { snapshot[s.id] = servoState[s.id]; });
+  savedPoses.push({ name, servos: snapshot });
+  savePoses();
+  renderPresets();
+  log(`Pose "${name}" saved`, 'ok');
+});
+
+function loadPose(idx) {
+  const pose = savedPoses[idx];
+  const dur = parseInt(document.getElementById('durationSlider').value);
+  const servos = [];
+  Object.entries(pose.servos).forEach(([id, duty]) => {
+    id = parseInt(id);
+    servoState[id] = duty;
+    updateSliderUI(id, duty);
+    servos.push({ id, duty });
+  });
+  socket.emit('arm:move_servos', { servos, duration: dur });
+  updateVisualizer();
+  log(`Pose "${pose.name}" loaded (${dur}ms)`, 'blue');
+}
+
+function deletePose(idx) {
+  const name = savedPoses[idx].name;
+  savedPoses.splice(idx, 1);
+  savePoses();
+  renderPresets();
+  log(`Pose "${name}" deleted`, 'warn');
+}
+
+// ─── Simple arm visualizer ────────────────────────────────────────────────────
+function updateVisualizer() {
+  // We do a simplified top-down / side-view based on duty values.
+  // Servo IDs: 1=base, 2=shoulder, 3=elbow-upper, 4=elbow-lower, 5=wrist, 6=gripper
+
+  function dutyToAngle(duty, minDeg, maxDeg) {
+    return minDeg + (duty / 2500) * (maxDeg - minDeg);
+  }
+
+  // Simple 2D side projection
+  const baseX = 100, baseY = 205;
+  const seg1Len = 40, seg2Len = 45, seg3Len = 35, seg4Len = 28, seg5Len = 22;
+
+  // Shoulder angle (duty 0=full down ~-90°, 2500=full up ~90°)
+  const a2 = dutyToAngle(servoState[2], -90, 90) * Math.PI / 180;
+  const a3 = dutyToAngle(servoState[3], -70, 70) * Math.PI / 180;
+  const a4 = dutyToAngle(servoState[4], -60, 60) * Math.PI / 180;
+  const a5 = dutyToAngle(servoState[5], -45, 45) * Math.PI / 180;
+
+  const p1x = baseX, p1y = baseY - seg1Len;
+  const p2x = p1x + Math.sin(a2) * seg2Len;
+  const p2y = p1y - Math.cos(a2) * seg2Len;
+  const p3x = p2x + Math.sin(a2 + a3) * seg3Len;
+  const p3y = p2y - Math.cos(a2 + a3) * seg3Len;
+  const p4x = p3x + Math.sin(a2 + a3 + a4) * seg4Len;
+  const p4y = p3y - Math.cos(a2 + a3 + a4) * seg4Len;
+  const p5x = p4x + Math.sin(a2 + a3 + a4 + a5) * seg5Len;
+  const p5y = p4y - Math.cos(a2 + a3 + a4 + a5) * seg5Len;
+
+  function setLine(id, x1, y1, x2, y2) {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('x1', x1); el.setAttribute('y1', y1); el.setAttribute('x2', x2); el.setAttribute('y2', y2); }
+  }
+  function setCircle(id, cx, cy) {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('cx', cx); el.setAttribute('cy', cy); }
+  }
+
+  setLine('seg1', baseX, baseY, p1x, p1y);
+  setCircle('joint1', p1x, p1y);
+  setLine('seg2', p1x, p1y, p2x, p2y);
+  setCircle('joint2', p2x, p2y);
+  setLine('seg3', p2x, p2y, p3x, p3y);
+  setCircle('joint3', p3x, p3y);
+  setLine('seg4', p3x, p3y, p4x, p4y);
+  setCircle('joint4', p4x, p4y);
+  setLine('seg5', p4x, p4y, p5x, p5y);
+
+  // Gripper spread based on servo 6
+  const gripSpread = 8 + (servoState[6] / 2500) * 12;
+  const gripAngle = Math.atan2(p5x - p4x, p4y - p5y);
+  document.getElementById('grip1').setAttribute('x1', p5x);
+  document.getElementById('grip1').setAttribute('y1', p5y);
+  document.getElementById('grip1').setAttribute('x2', p5x - Math.cos(gripAngle) * gripSpread);
+  document.getElementById('grip1').setAttribute('y2', p5y - Math.sin(gripAngle) * gripSpread);
+  document.getElementById('grip2').setAttribute('x1', p5x);
+  document.getElementById('grip2').setAttribute('y1', p5y);
+  document.getElementById('grip2').setAttribute('x2', p5x + Math.cos(gripAngle) * gripSpread);
+  document.getElementById('grip2').setAttribute('y2', p5y + Math.sin(gripAngle) * gripSpread);
+
+  // Update position readout
+  const readout = document.getElementById('posReadout');
+  readout.innerHTML = SERVOS.map(s =>
+    `<div style="background:var(--black-3);border:1px solid var(--black-4);border-radius:4px;padding:5px 8px;text-align:center;">
+       <div style="font-family:var(--mono);font-size:9px;color:var(--bone-faint);letter-spacing:0.1em">S${s.id}</div>
+       <div style="font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:500">${servoState[s.id]}</div>
+     </div>`
+  ).join('');
+}
+
+// ─── Console logging ──────────────────────────────────────────────────────────
+function log(msg, level = 'info') {
+  const console_ = document.getElementById('consoleLog');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry ' + level;
+  const now = new Date();
+  const t = now.toTimeString().slice(0, 8);
+  entry.innerHTML = `<span class="log-time">${t}</span><span class="log-msg">${msg}</span>`;
+  console_.prepend(entry);
+  // Keep max 80 entries
+  while (console_.children.length > 80) console_.removeChild(console_.lastChild);
+}
+
+function clearLog() {
+  document.getElementById('consoleLog').innerHTML = '';
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildServoGrid();
+renderPresets();
+updateVisualizer();
+log('LeArm Controller ready', 'blue');
+log('Click ↻ Scan to detect your serial port, then Connect.', 'info');
+</script>
+</body>
+</html>
