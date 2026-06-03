@@ -600,6 +600,14 @@ function buildServoGrid() {
   });
 }
 
+// Always send all 6 servos in one packet.
+// The schematic shows S1 (gripper) is gated through an AND gate (SN74LVC1G08)
+// that the desktop app never bypasses — it always sends all 6 servos together.
+// Sending S1 alone appears to not trigger the gate. Match that behavior.
+function buildAllServos() {
+  return SERVOS.map(s => ({ id: s.id, duty: servoState[s.id] }));
+}
+
 // Fires on every pixel of drag — throttled to avoid flooding serial at 9600
 function onSliderInput(id, val) {
   val = parseInt(val);
@@ -608,11 +616,11 @@ function onSliderInput(id, val) {
   document.getElementById('duty_' + id).innerHTML = val + ' <small>µs</small>';
   updateVisualizer();
 
-  // Throttled live send
+  // Throttled live send — always all 6
   clearTimeout(throttleTimers[id]);
   throttleTimers[id] = setTimeout(() => {
     const dur = parseInt(document.getElementById('durationSlider').value);
-    socket.emit('arm:move_servo', { id, duty: val, duration: dur });
+    socket.emit('arm:move_servos', { servos: buildAllServos(), duration: dur });
   }, THROTTLE_MS);
 }
 
@@ -621,7 +629,7 @@ function onSliderCommit(id, val) {
   val = parseInt(val);
   clearTimeout(throttleTimers[id]);
   const dur = parseInt(document.getElementById('durationSlider').value);
-  socket.emit('arm:move_servo', { id, duty: val, duration: dur });
+  socket.emit('arm:move_servos', { servos: buildAllServos(), duration: dur });
   log('S' + id + ' (' + SERVOS.find(s=>s.id===id).name + ') → ' + val + ' µs (' + dur + 'ms)', 'info');
 }
 
