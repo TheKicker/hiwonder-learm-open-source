@@ -686,6 +686,7 @@ function onDutyInputChange(id, rawVal) {
   }
   const val = Math.max(s.min, Math.min(s.max, parsed));
   document.getElementById('duty_' + id).value = val;
+  document.getElementById('slider_' + id).value = val;
   servoState[id] = val;
   updateSliderTrack(id, val);
   updateVisualizer();
@@ -912,16 +913,18 @@ function updateVisualizer() {
   // PWM: 500µs = 0°, 2500µs = 180° (standard servo convention)
   function dutyToDeg(duty) { return ((duty - 500) / 2000) * 180; }
 
-  // Shoulder (S5): 500=low, 2500=high → visualize as angle from vertical
-  const a5 = (dutyToDeg(servoState[5]) - 90) * Math.PI / 180;  // shoulder
-  const a4 = (dutyToDeg(servoState[4]) - 90) * Math.PI / 180;  // elbow upper
-  const a3 = (dutyToDeg(servoState[3]) - 90) * Math.PI / 180;  // elbow lower
+  // S5 adds forward lean as PWM increases. S4 and S3 are physically reversed —
+  // they subtract from the cumulative lean, so they are negated.
+  const a5 = -(dutyToDeg(servoState[5]) - 90) * Math.PI / 180;
+  const a4 =  (dutyToDeg(servoState[4]) - 90) * Math.PI / 180;
+  const a3 = -(dutyToDeg(servoState[3]) - 90) * Math.PI / 180;
   const a2 = (dutyToDeg(servoState[2]) - 90) * Math.PI / 180;  // wrist
 
   const bx = 100, by = 189;
   const L1 = 37, L2 = 42, L3 = 34, L4 = 26, L5 = 22;
 
-  const p1x = bx, p1y = by - L1;
+  // j1 sits at the base — no post between base and first joint
+  const p1x = bx, p1y = by;
   const p2x = p1x + Math.sin(a5) * L2, p2y = p1y - Math.cos(a5) * L2;
   const p3x = p2x + Math.sin(a5 + a4) * L3, p3y = p2y - Math.cos(a5 + a4) * L3;
   const p4x = p3x + Math.sin(a5 + a4 + a3) * L4, p4y = p3y - Math.cos(a5 + a4 + a3) * L4;
