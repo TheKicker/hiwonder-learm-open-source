@@ -1,93 +1,76 @@
 # LeArm Web Controller
 
-Web-based GUI to control the **Hiwonder LeArm / xArm1S** (6-DOF) over USB serial from a Raspberry Pi (or any Linux machine).
-
-Built with Node.js, Express, Socket.IO, and the `serialport` library. Protocol derived directly from the ESP32 firmware source.
+Web-based GUI to control the **Hiwonder LeArm / xArm1S** (6-DOF) over USB serial.
+Works on **Windows**, **macOS**, and **Linux/Raspberry Pi**.
 
 ---
 
 ## Hardware Setup
 
 1. **Power on the arm** via USB-C (or battery)
-2. **Connect USB** from Pi to the arm's controller board
+2. **Connect USB** from your computer to the arm's controller board
 3. **Switch to PC mode** — press the button on the controller board **once** after power-on  
-   → LED blinks slowly (1 second on / 1 second off) = PC mode confirmed  
-   → Button cycles: App → **PC** → PS2 → Freeplay → App
-
-The arm appears as `/dev/ttyUSB0` or `/dev/ttyACM0` on Linux.
+   → LED blinks slowly (1 second on / 1 second off) = PC mode confirmed
 
 ---
 
-## Software Setup (Raspberry Pi)
+## Software Setup
+
+### Prerequisites — Node.js
+
+Install Node.js 18+ from https://nodejs.org if you don't have it.
 
 ```bash
-# 1. Clone or copy the project
-cd ~
-# (copy learm-controller folder here)
+node --version   # should be v18 or higher
+```
 
-# 2. Install Node.js if not already installed
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
+### Install & run
 
-# 3. Install dependencies
+```bash
 cd learm-controller
 npm install
-
-# 4. Give your user access to the serial port
-sudo usermod -a -G dialout $USER
-# Log out and back in for this to take effect
-
-# 5. Start the server
 npm start
 ```
 
-Then open a browser (on the Pi or any machine on the same network):
-
-```
-http://<raspberry-pi-ip>:3000
-```
+Then open a browser to **http://localhost:3000**
 
 ---
 
-## Configuration
+## Serial Port
 
-Override defaults via environment variables:
+The server auto-detects your platform and picks a default:
+
+| Platform | Default |
+|---|---|
+| Windows | `COM6` |
+| macOS | `/dev/tty.usbserial-0001` |
+| Linux / Pi | `/dev/ttyUSB0` |
+
+The UI **auto-scans** for available ports on load and sorts them — the arm's
+CH340/CP210x chip usually appears first. Just hit **+ Connect**.
+
+### Override the default
 
 ```bash
-PORT=8080 SERIAL_PATH=/dev/ttyACM0 npm start
+# Windows
+set SERIAL_PATH=COM3 && npm start
+
+# macOS / Linux
+SERIAL_PATH=/dev/ttyUSB1 npm start
 ```
 
-| Variable      | Default          | Description                   |
-|---------------|------------------|-------------------------------|
-| `PORT`        | `3000`           | HTTP server port              |
-| `SERIAL_PATH` | `/dev/ttyUSB0`   | Serial device path            |
+### Linux serial permissions (one-time)
 
----
-
-## Protocol Reference
-
-Derived from `LeArm_ESP32_Arduino_factory250512` firmware source.
-
-**Serial:** 9600 baud, 8N1  
-**Packet format (PC → Arm):**
+```bash
+sudo usermod -a -G dialout $USER
+# Log out and back in
 ```
-[0x55] [0x55] [len] [cmd] [...data]
-```
-`len` = 1 (len byte) + 1 (cmd) + data.length
 
-**Key commands:**
+### Finding your port
 
-| CMD ID | Name                 | Payload                                      |
-|--------|----------------------|----------------------------------------------|
-| 1      | VERSION_QUERY        | none                                         |
-| 3      | MULT_SERVO_MOVE      | `count, time_lo, time_hi, [id, duty_lo, duty_hi] x N` |
-| 6      | ACTION_GROUP_RUN     | `group_index, times_lo, times_hi`            |
-| 7      | ACTION_GROUP_STOP    | none                                         |
-| 12     | SERVOS_RESET         | none                                         |
-| 13     | SERVOS_READ          | none                                         |
-
-**Servo positions:** 0–2500 duty units (PWM mode), maps to 0–240° mechanical range  
-**Home positions:** S1=770, S2=1500, S3=644, S4=511, S5=1255, S6=1500
+**Windows** — Device Manager → Ports (COM & LPT) → look for "USB-SERIAL CH340"  
+**macOS** — `ls /dev/tty.usb*` in Terminal  
+**Linux** — `ls /dev/ttyUSB*` or `dmesg | tail` after plugging in  
 
 ---
 
@@ -96,34 +79,35 @@ Derived from `LeArm_ESP32_Arduino_factory250512` firmware source.
 ```
 learm-controller/
 ├── src/
-│   ├── server.js       ← Express + Socket.IO server
-│   └── protocol.js     ← Packet builder / parser (from firmware)
+│   ├── server.js     — Express + Socket.IO, serial comms
+│   └── protocol.js   — Packet builder/parser (from firmware source)
 ├── public/
-│   └── index.html      ← Web GUI (single file, no build step)
+│   └── index.html    — Web GUI (single file, no build step)
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## Future: OpenCV Integration
+## Servo ID → Joint Mapping
 
-The server is structured to support a Python subprocess for vision:
+Confirmed from firmware source (`Pwmservo.cpp` + `knot_run()`):
 
-```bash
-# Planned flow:
-# 1. Python script captures webcam → detects objects → publishes coordinates via stdin/socket
-# 2. Node server receives coordinates → emits to browser OR sends direct arm commands
-# 3. Browser shows live camera feed via WebSocket + canvas
-```
+| ID | Joint | Range | Notes |
+|---|---|---|---|
+| S1 | Gripper | 600–1500 µs | Open=1500, Closed=600 |
+| S2 | Wrist Roll | 500–2500 µs | |
+| S3 | Elbow Lower | 500–2500 µs | |
+| S4 | Elbow Upper | 500–2500 µs | |
+| S5 | Shoulder | 500–2500 µs | |
+| S6 | Base Rotate | 500–2500 µs | Left=500, Right=2500 |
 
-The Pi 4B with 2GB RAM is plenty for Node.js + OpenCV simultaneously.
+Baud rate: **9600** (confirmed from `Serial.begin(9600)` in firmware)
 
 ---
 
-## Development
+## Dev mode (auto-restart on file changes)
 
 ```bash
-# Auto-restart on file changes (requires devDependencies)
 npm run dev
 ```

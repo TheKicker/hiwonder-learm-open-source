@@ -392,27 +392,33 @@ footer {
         <span style="font-family:var(--mono);font-size:9px;color:var(--border2)">µs PULSEWIDTH</span>
       </div>
       <div class="panel-body">
-        <svg id="armVis" width="200" height="220" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Base plate -->
-          <ellipse cx="100" cy="214" rx="52" ry="9" fill="var(--bg4)" stroke="var(--border2)" stroke-width="1.5"/>
-          <rect x="72" y="207" width="56" height="10" rx="2" fill="var(--bg4)" stroke="var(--border2)" stroke-width="1"/>
-          <!-- Rotation ring -->
-          <ellipse cx="100" cy="206" rx="28" ry="5" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>
-          <!-- Turret body -->
-          <rect x="88" y="194" width="24" height="14" rx="3" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2" opacity="0.7"/>
+        <svg id="armVis" width="200" height="225" viewBox="0 0 200 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground shadow -->
+          <ellipse cx="-10" cy="222" rx="68" ry="4" fill="var(--bg4)" opacity="0.35"/>
+          <!-- Base plate: wide flat rectangle, slightly rounded, centered -->
+          <rect x="-10" y="208" width="144" height="13" rx="3" fill="var(--bg4)" stroke="var(--border2)" stroke-width="1.3"/>
+          <!-- Top-face highlight strip -->
+          <rect x="30" y="208" width="140" height="4" rx="2" fill="var(--bg3)" opacity="0.4"/>
+          <!-- Turntable stack: two concentric rings centered at x=100 -->
+          <ellipse cx="100" cy="208" rx="26" ry="5.5" fill="var(--bg3)" stroke="var(--border2)" stroke-width="1"/>
+          <ellipse cx="100" cy="205" rx="26" ry="5.5" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1" opacity="0.55"/>
+          <ellipse cx="100" cy="203" rx="18" ry="4" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2" opacity="0.75"/>
+          <!-- Turret block -->
+          <rect x="88" y="196" width="24" height="9" rx="2.5" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2" opacity="0.85"/>
           <!-- Center post -->
-          <rect x="96" y="188" width="8" height="8" rx="2" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2"/>
-          <line id="seg1" x1="100" y1="197" x2="100" y2="160" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
-          <circle id="j1" cx="100" cy="160" r="6" fill="var(--bg)" stroke="var(--blue)" stroke-width="2"/>
-          <line id="seg2" x1="100" y1="160" x2="100" y2="118" stroke="var(--blue)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
-          <circle id="j2" cx="100" cy="118" r="5" fill="var(--bg)" stroke="var(--blue)" stroke-width="2" opacity="0.8"/>
-          <line id="seg3" x1="100" y1="118" x2="100" y2="84" stroke="var(--text-dim)" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-          <circle id="j3" cx="100" cy="84" r="4" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.6"/>
-          <line id="seg4" x1="100" y1="84" x2="115" y2="62" stroke="var(--text-dim)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-          <circle id="j4" cx="115" cy="62" r="3.5" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.5"/>
-          <line id="seg5" x1="115" y1="62" x2="128" y2="46" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-          <line id="grip1" x1="128" y1="46" x2="122" y2="36" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
-          <line id="grip2" x1="128" y1="46" x2="135" y2="36" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <rect x="96" y="189" width="8" height="9" rx="2" fill="var(--bg3)" stroke="var(--blue)" stroke-width="1.2"/>
+          <!-- Arm segments — centered at x=100 -->
+          <line id="seg1" x1="100" y1="189" x2="100" y2="155" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/>
+          <circle id="j1" cx="100" cy="155" r="6" fill="var(--bg)" stroke="var(--blue)" stroke-width="2"/>
+          <line id="seg2" x1="100" y1="155" x2="100" y2="113" stroke="var(--blue)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+          <circle id="j2" cx="100" cy="113" r="5" fill="var(--bg)" stroke="var(--blue)" stroke-width="2" opacity="0.8"/>
+          <line id="seg3" x1="100" y1="113" x2="100" y2="79" stroke="var(--text-dim)" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+          <circle id="j3" cx="100" cy="79" r="4" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.6"/>
+          <line id="seg4" x1="100" y1="79" x2="115" y2="57" stroke="var(--text-dim)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <circle id="j4" cx="115" cy="57" r="3.5" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.5"/>
+          <line id="seg5" x1="115" y1="57" x2="128" y2="41" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <line id="grip1" x1="128" y1="41" x2="122" y2="31" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <line id="grip2" x1="128" y1="41" x2="135" y2="31" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
         </svg>
         <div class="pos-readout" id="posReadout"></div>
       </div>
@@ -439,9 +445,7 @@ footer {
         <div class="field-row">
           <label class="field-label">Serial Port</label>
           <select class="field-input" id="portSelect">
-            <option value="/dev/ttyUSB0">/dev/ttyUSB0</option>
-            <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>
-            <option value="/dev/ttyACM0">/dev/ttyACM0</option>
+            <option value="">Scanning...</option>
           </select>
         </div>
         <div class="btn-row">
@@ -636,8 +640,9 @@ function buildServoGrid() {
       </div>
       <input type="number" class="duty-input" id="duty_${s.id}"
         min="${s.min}" max="${s.max}" value="${servoState[s.id]}"
-        onchange="onDutyInputChange(${s.id}, this.value)"
-        onkeydown="if(event.key==='Enter')this.blur()">
+        onblur="onDutyInputChange(${s.id}, this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()"
+        onfocus="this.select()">
       <button class="servo-home-btn" onclick="servoHome(${s.id})">HOME</button>
     `;
     grid.appendChild(row);
@@ -669,10 +674,16 @@ function onSliderCommit(id, val) {
   log('S' + id + ' (' + SERVOS.find(s=>s.id===id).name + ') → ' + val + ' µs (' + dur + 'ms)', 'info');
 }
 
-// Direct text input change — clamp, update slider, send
-function onDutyInputChange(id, val) {
+// Direct text input change — only fires on blur or Enter
+function onDutyInputChange(id, rawVal) {
   const s = SERVOS.find(sv => sv.id === id);
-  val = Math.max(s.min, Math.min(s.max, parseInt(val) || s.home));
+  const parsed = parseInt(rawVal);
+  if (isNaN(parsed)) {
+    // Restore last good value if they cleared the field
+    document.getElementById('duty_' + id).value = servoState[id];
+    return;
+  }
+  const val = Math.max(s.min, Math.min(s.max, parsed));
   document.getElementById('duty_' + id).value = val;
   servoState[id] = val;
   updateSliderTrack(id, val);
@@ -814,27 +825,7 @@ document.getElementById('sendAllBtn').addEventListener('click', () => {
   log('All 6 servos sent (' + dur + 'ms)', 'blue');
 });
 
-document.getElementById('refreshPortsBtn').addEventListener('click', async () => {
-  log('Scanning ports…', 'info');
-  try {
-    const res = await fetch('/api/ports');
-    const { ports } = await res.json();
-    const sel = document.getElementById('portSelect');
-    sel.innerHTML = '';
-    if (!ports.length) {
-      sel.innerHTML = '<option value="">No ports found</option>';
-      log('No serial ports found', 'warn');
-    } else {
-      ports.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.path;
-        opt.textContent = p.path + (p.manufacturer ? '  ·  ' + p.manufacturer : '');
-        sel.appendChild(opt);
-      });
-      log('Found ' + ports.length + ' port(s)', 'ok');
-    }
-  } catch (e) { log('Port scan failed: ' + e.message, 'err'); }
-});
+// refreshPortsBtn handled by scanPorts() above
 
 // ─── Saved poses ──────────────────────────────────────────────────────────────
 function savePosesToStorage() { localStorage.setItem('learm_poses', JSON.stringify(savedPoses)); }
@@ -913,7 +904,7 @@ function updateVisualizer() {
   const a3 = (dutyToDeg(servoState[3]) - 90) * Math.PI / 180;  // elbow lower
   const a2 = (dutyToDeg(servoState[2]) - 90) * Math.PI / 180;  // wrist
 
-  const bx = 100, by = 197;
+  const bx = 100, by = 189;
   const L1 = 37, L2 = 42, L3 = 34, L4 = 26, L5 = 22;
 
   const p1x = bx, p1y = by - L1;
@@ -984,6 +975,59 @@ renderPresets();
 updateVisualizer();
 // Init duration track
 document.getElementById('durationSlider').dispatchEvent(new Event('input'));
+// Auto-scan ports on load — uses server's platform-aware default
+async function scanPorts(autoConnect = false) {
+  try {
+    const res = await fetch('/api/ports');
+    const { ports, platform, defaultPath } = await res.json();
+    const sel = document.getElementById('portSelect');
+    sel.innerHTML = '';
+
+    if (!ports.length) {
+      sel.innerHTML = '<option value="">No ports found — check USB connection</option>';
+      log('No serial ports found', 'warn');
+      return;
+    }
+
+    // Sort: put likely arm ports first (CH340/CP210x are common ESP32 USB chips)
+    const armChips = ['CH340', 'CP210', 'CH341', 'wch', 'silicon', 'FTDI'];
+    ports.sort((a, b) => {
+      const aIsArm = armChips.some(c => (a.manufacturer||'').toLowerCase().includes(c.toLowerCase()));
+      const bIsArm = armChips.some(c => (b.manufacturer||'').toLowerCase().includes(c.toLowerCase()));
+      return bIsArm - aIsArm;
+    });
+
+    ports.forEach((p, i) => {
+      const opt = document.createElement('option');
+      opt.value = p.path;
+      const mfr = p.manufacturer ? ` · ${p.manufacturer}` : '';
+      const desc = p.friendlyName && p.friendlyName !== p.path ? ` (${p.friendlyName})` : '';
+      opt.textContent = p.path + mfr + desc;
+      // Pre-select the server's default path, or first port if not found
+      if (p.path === defaultPath || i === 0) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    const platform_label = { win32:'Windows', darwin:'macOS', linux:'Linux' }[platform] || platform;
+    log(`Found ${ports.length} port(s) on ${platform_label}`, 'ok');
+
+    if (autoConnect) {
+      const chosen = sel.value;
+      socket.emit('serial:connect', { path: chosen });
+      log('Auto-connecting to ' + chosen + '…', 'info');
+    }
+  } catch(e) {
+    log('Port scan failed: ' + e.message, 'err');
+  }
+}
+
+// Replace the refresh button handler to use the shared function
+document.getElementById('refreshPortsBtn').removeEventListener('click', null);
+document.getElementById('refreshPortsBtn').addEventListener('click', () => scanPorts(false));
+
+// Scan on load
+scanPorts(false);
+
 log('LeArm Controller ready', 'blue');
 </script>
 </body>
