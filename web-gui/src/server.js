@@ -155,8 +155,18 @@ io.on('connection', socket => {
   socket.on('arm:move_servos', ({ servos, duration = 500 }) => {
     sendToArm(moveServos(servos, duration));
   });
-  socket.on('arm:reset',       () => sendToArm(resetHome()));
+  // Reset to home = explicit 1500 on all 6 servos.
+  // CMD.SERVOS_RESET uses hardcoded factory values from Config.h (770, 644, 511 etc.)
+  // which don't match a mechanically-zeroed arm. Always send 1500 explicitly.
+  socket.on('arm:reset', () => {
+    const home = [1,2,3,4,5,6].map(id => ({ id, duty: 1500 }));
+    sendToArm(moveServos(home, 1000));
+  });
   socket.on('arm:stop',        () => sendToArm(stopAction()));
+
+  // Factory reset — Hiwonder original Config.h values, NOT your mechanical zero
+  // Only correct if arm is assembled per Hiwonder's original instructions
+  socket.on('arm:factory_reset', () => sendToArm(resetHome()));
   socket.on('arm:read',        () => sendToArm(readServos()));
 
   socket.on('arm:set_offset',  ({ id, offset }) => sendToArm(setOffset(id, offset)));
