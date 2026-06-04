@@ -3,6 +3,10 @@
 Web-based GUI to control the **Hiwonder LeArm / xArm1S** (6-DOF) over USB serial.
 Works on **Windows**, **macOS**, and **Linux/Raspberry Pi**.
 
+![Dark Mode Web GUI](assets/web-gui-dark.png)
+
+![Light Mode Web GUI](assets/web-gui-light.png)
+
 ---
 
 ## Hardware Setup
@@ -88,6 +92,10 @@ learm-controller/
 ```
 
 ---
+
+![Live Pose example Web GUI](assets/web-gui-live-pose.png)
+
+Live Pose is still a work in progress, doesn't always match reality - especially need to add logic for the EOAT. Right now the claw is represented by a single line.
 
 ## Servo ID → Joint Mapping
 
